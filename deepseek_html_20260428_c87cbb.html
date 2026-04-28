@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experimento de Resistividade - Lei de Ohm</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .select-wrapper {
+            display: inline-block;
+            margin: 0 15px;
+        }
+        
+        select {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 250px;
+        }
+        
+        select:hover {
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+        }
+        
+        label {
+            font-weight: bold;
+            color: #333;
+            font-size: 18px;
+            margin-right: 10px;
+        }
+        
+        .current-info {
+            background: linear-gradient(135deg, #e7f3ff 0%, #d4e6ff 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #0056b3;
+            border: 2px solid #b3d4ff;
+        }
+        
+        .current-value {
+            color: #dc3545;
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .data-section {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .data-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .table-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .chart-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        tr:hover {
+            background: #e9ecef;
+            transition: background 0.3s;
+        }
+        
+        canvas {
+            max-height: 400px;
+            width: 100% !important;
+        }
+        
+        .analysis {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .analysis h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .analysis h3 {
+            color: #667eea;
+            margin: 20px 0 10px 0;
+            font-size: 18px;
+        }
+        
+        .analysis ul, .analysis ol {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        
+        .analysis li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #856404;
+        }
+        
+        .formula {
+            background: #e7f3ff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Experimento de Resistividade Elétrica</h1>
+        
+        <div class="controls">
+            <label for="wireSelect">Selecione o tipo de fio:</label>
+            <div class="select-wrapper">
+                <select id="wireSelect">
+                    <option value="nicr05">Ni-Cr (Diâmetro 0.5 mm)</option>
+                    <option value="nicr10">Ni-Cr (Diâmetro 1.0 mm)</option>
+                    <option value="nicr15">Ni-Cr (Diâmetro 1.5 mm)</option>
+                    <option value="fe15">Ferro (Diâmetro 1.5 mm)</option>
+                </select>
+            </div>
+            <div class="current-info">
+                ⚡ Corrente elétrica constante: <span class="current-value">I = 2.0 A</span>
+            </div>
+        </div>
+
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner"></div>
+            <p>Calculando dados...</p>
+        </div>
+
+        <div class="data-section">
+            <div class="table-container">
+                <h3>📊 Dados Experimentais Calculados</h3>
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Comprimento L (m)</th>
+                            <th>Tensão V (V)</th>
+                            <th>Resistência R (Ω)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Preenchido via JavaScript -->
+                    </tbody>
+                </table>
+                <div style="margin-top: 15px; font-size: 14px; color: #666; text-align: center;">
+                    * Valores calculados usando V = R × I (Lei de Ohm)
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>📈 Gráfico: Resistência × Comprimento</h3>
+                <canvas id="resistivityChart"></canvas>
+                <div id="chartInfo" style="margin-top: 10px; text-align: center; font-weight: bold; color: #667eea;"></div>
+            </div>
+        </div>
+
+        <div class="analysis">
+            <h2>🔬 Análise do Especialista em Física</h2>
+            <div id="analysisContent">
+                <!-- Preenchido via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURAÇÕES E CONSTANTES FÍSICAS
+        // ============================================
+        
+        // Corrente elétrica constante (Amperes)
+        const CORRENTE = 2.0;
+        
+        // Comprimentos dos fios (metros)
+        const COMPRIMENTOS = [0.5, 1.0, 1.5, 2.0, 2.5];
+        
+        // Resistividades dos materiais (Ω·m) a 20°C
+        const RESISTIVIDADES = {
+            'nicr': 1.10e-6,  // Níquel-Cromo (liga 80/20)
+            'fe': 9.71e-8     // Ferro puro
+        };
+        
+        // Diâmetros disponíveis (convertidos para metros)
+        const DIAMETROS = {
+            '05': 0.0005,  // 0.5 mm
+            '10': 0.0010,  // 1.0 mm
+            '15': 0.0015   // 1.5 mm
+        };
+        
+        // Informações descritivas dos fios
+        const INFO_FIOS = {
+            'nicr05': { 
+                nome: 'Níquel-Cromo 0.5mm', 
+                material: 'Ni-Cr', 
+                diametro: '0.5 mm',
+                resistividade: '1.10 × 10⁻⁶ Ω·m'
+            },
+            'nicr10': { 
+                nome: 'Níquel-Cromo 1.0mm', 
+                material: 'Ni-Cr', 
+                diametro: '1.0 mm',
+                resistividade: '1.10 × 10⁻⁶ Ω·m'
+            },
+            'nicr15': { 
+                nome: 'Níquel-Cromo 1.5mm', 
+                material: 'Ni-Cr', 
+                diametro: '1.5 mm',
+                resistividade: '1.10 × 10⁻⁶ Ω·m'
+            },
+            'fe15': { 
+                nome: 'Ferro 1.5mm', 
+                material: 'Fe', 
+                diametro: '1.5 mm',
+                resistividade: '9.71 × 10⁻⁸ Ω·m'
+            }
+        };
+        
+        // ============================================
+        // FUNÇÕES DE CÁLCULO
+        // ============================================
+        
+        /**
+         * Calcula a área da seção transversal do fio
+         * @param {number} diametro - Diâmetro em metros
+         * @returns {number} Área em m²
+         */
+        function calcularArea(diametro) {
+            const raio = diametro / 2;
+            return Math.PI * raio * raio;
+        }
+        
+        /**
+         * Calcula a resistência elétrica usando a Segunda Lei de Ohm
+         * @param {number} resistividade - Resistividade do material (Ω·m)
+         * @param {number} comprimento - Comprimento do fio (m)
+         * @param {number} area - Área da seção transversal (m²)
+         * @returns {number} Resistência em Ohms
+         */
+        function calcularResistencia(resistividade, comprimento, area) {
+            return (resistividade * comprimento) / area;
+        }
+        
+        /**
+         * Calcula a tensão usando a Primeira Lei de Ohm
+         * @param {number} resistencia - Resistência (Ω)
+         * @returns {number} Tensão em Volts
+         */
+        function calcularTensao(resistencia) {
+            return resistencia * CORRENTE;
+        }
+        
+        // ============================================
+        // FUNÇÕES DE GERAÇÃO DE DADOS
+        // ============================================
+        
+        /**
+         * Gera os dados experimentais para um tipo específico de fio
+         * @param {string} tipoFio - Código do fio (ex: 'nicr05')
+         * @returns {Array} Array de objetos com dados calculados
+         */
+        function gerarDadosFio(tipoFio) {
+            // Extrair material e diâmetro do código
+            let material, diametroCodigo;
+            
+            if (tipoFio.startsWith('nicr')) {
+                material = 'nicr';
+                diametroCodigo = tipoFio.replace('nicr', '');
+            } else if (tipoFio.startsWith('fe')) {
+                material = 'fe';
+                diametroCodigo = tipoFio.replace('fe', '');
+            }
+            
+            const resistividade = RESISTIVIDADES[material];
+            const diametro = DIAMETROS[diametroCodigo];
+            const area = calcularArea(diametro);
+            
+            // Gerar dados para cada comprimento
+            const dados = COMPRIMENTOS.map(comprimento => {
+                const resistencia = calcularResistencia(resistividade, comprimento, area);
+                const tensao = calcularTensao(resistencia);
+                
+                return {
+                    comprimento: comprimento,
+                    resistencia: parseFloat(resistencia.toFixed(4)),
+                    tensao: parseFloat(tensao.toFixed(4)),
+                    area: area,
+                    resistividade: resistividade
+                };
+            });
+            
+            return dados;
+        }
+        
+        // ============================================
+        // FUNÇÕES DE ATUALIZAÇÃO DA INTERFACE
+        // ============================================
+        
+        /**
+         * Atualiza a tabela com os dados calculados
+         * @param {Array} dados - Array com dados dos cálculos
+         */
+        function atualizarTabela(dados) {
+            const tbody = document.getElementById('tableBody');
+            
+            // Limpar tabela atual
+            tbody.innerHTML = '';
+            
+            // Adicionar novas linhas
+            dados.forEach((item, index) => {
+                const row = document.createElement('tr');
+                
+                // Coluna Comprimento
+                const tdComprimento = document.createElement('td');
+                tdComprimento.textContent = item.comprimento.toFixed(1);
+                
+                // Coluna Tensão
+                const tdTensao = document.createElement('td');
+                tdTensao.textContent = item.tensao.toFixed(4);
+                
+                // Coluna Resistência
+                const tdResistencia = document.createElement('td');
+                tdResistencia.textContent = item.resistencia.toFixed(4);
+                
+                row.appendChild(tdComprimento);
+                row.appendChild(tdTensao);
+                row.appendChild(tdResistencia);
+                
+                // Animação de entrada
+                row.style.opacity = '0';
+                row.style.transform = 'translateY(10px)';
+                row.style.transition = 'all 0.3s ease';
+                
+                tbody.appendChild(row);
+                
+                // Trigger animation
+                setTimeout(() => {
+                    row.style.opacity = '1';
+                    row.style.transform = 'translateY(0)';
+                }, 50 * index);
+            });
+        }
+        
+        // Variável para armazenar a instância do gráfico
+        let chartInstance = null;
+        
+        /**
+         * Atualiza ou cria o gráfico de Resistência x Comprimento
+         * @param {Array} dados - Array com dados calculados
+         * @param {string} tipoFio - Código do fio selecionado
+         */
+        function atualizarGrafico(dados, tipoFio) {
+            const canvas = document.getElementById('resistivityChart');
+            const ctx = canvas.getContext('2d');
+            
+            // Destruir gráfico anterior se existir
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+            
+            // Preparar dados para o gráfico
+            const comprimentos = dados.map(item => item.comprimento);
+            const resistencias = dados.map(item => item.resistencia);
+            
+            // Calcular inclinação (R/L) - deve ser constante
+            const inclinacao = resistencias[comprimentos.length - 1] / comprimentos[comprimentos.length - 1];
+            
+            // Informações do fio
+            const infoFio = INFO_FIOS[tipoFio];
+            
+            // Criar novo gráfico
+            chartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: `${infoFio.nome}`,
+                        data: comprimentos.map((l, i) => ({
+                            x: l,
+                            y: resistencias[i]
+                        })),
+                        backgroundColor: '#667eea',
+                        borderColor: '#764ba2',
+                        borderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#764ba2',
+                        pointBorderWidth: 2,
+                        showLine: true,
+                        tension: 0,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14
+                                },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const ponto = context.raw;
+                                    return [
+                                        `Comprimento: ${ponto.x.toFixed(1)} m`,
+                                        `Resistência: ${ponto.y.toFixed(4)} Ω`,
+                                        `Tensão: ${(ponto.y * CORRENTE).toFixed(4)} V`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: {
+                                display: true,
+                                text: 'Comprimento L (metros)',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            min: 0,
+                            max: 3.0,
+                            ticks: {
+                                stepSize: 0.5,
+                                callback: function(value) {
+                                    return value.toFixed(1) + ' m';
+                                }
+                            },
+                            grid: {
+                                color: '#e0e0e0'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Resistência R (Ohms)',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            min: 0,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(3) + ' Ω';
+                                }
+                            },
+                            grid: {
+                                color: '#e0e0e0'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Atualizar informação da inclinação
+            const chartInfo = document.getElementById('chartInfo');
+            chartInfo.innerHTML = `📐 Inclinação da reta (R/L): <span class="highlight">${inclinacao.toFixed(4)} Ω/m</span>`;
+        }
+        
+        /**
+         * Atualiza a análise do especialista com base no fio selecionado
+         * @param {string} tipoFio - Código do fio selecionado
+         * @param {Array} dados - Array com dados calculados
+         */
+        function atualizarAnalise(tipoFio, dados) {
+            const infoFio = INFO_FIOS[tipoFio];
+            const inclinacao = dados[dados.length - 1].resistencia / dados[dados.length - 1].comprimento;
+            
+            let html = `
+                <h3>📋 Análise para o fio de ${infoFio.nome}</h3>
+                
+                <div class="formula">
+                    R = ρ × L / A &nbsp;&nbsp;|&nbsp;&nbsp; V = R × I
+                </div>
+                
+                <h4>🔍 Características do Experimento:</h4>
+                <ul>
+                    <li><strong>Material:</strong> ${infoFio.material} com resistividade ρ = ${infoFio.resistividade}</li>
+                    <li><strong>Diâmetro:</strong> ${infoFio.diametro} (Área = ${dados[0].area.toExponential(2)} m²)</li>
+                    <li><strong>Corrente:</strong> Constante em ${CORRENTE} A</li>
+                    <li><strong>Inclinação experimental:</strong> ${inclinacao.toFixed(4)} Ω/m</li>
+                </ul>
+            `;
+            
+            // Análise específica baseada no tipo de fio
+            if (tipoFio.includes('nicr')) {
+                html += `
+                    <h4>💡 Comportamento do Níquel-Cromo:</h4>
+                    <ul>
+                        <li>O Ni-Cr possui <span class="highlight">alta resistividade</span> (1.10 × 10⁻⁶ Ω·m)</li>
+                        <li>Esta liga é cerca de <span class="highlight">11.3 vezes mais resistiva</span> que o Ferro puro</li>
+                        <li>Ideal para elementos de aquecimento devido à sua estabilidade térmica</li>
+                    </ul>
+                `;
+                
+                // Análise específica do diâmetro
+                const diametros = {
+                    'nicr05': '0.5 mm (menor área)',
+                    'nicr10': '1.0 mm (área intermediária)',
+                    'nicr15': '1.5 mm (maior área entre Ni-Cr)'
+                };
+                
+                html += `
+                    <h4>📏 Efeito do Diâmetro (Área da Seção Transversal):</h4>
+                    <p>Para o Ni-Cr com diâmetro de ${diametros[tipoFio]}:</p>
+                    <ul>
+                        <li>A área da seção transversal é <span class="highlight">${dados[0].area.toExponential(2)} m²</span></li>
+                        <li>A relação R = ρL/A mostra que quanto <span class="highlight">menor a área</span>, <span class="highlight">maior a resistência</span></li>
+                        <li>Isso explica a inclinação mais acentuada no gráfico para fios mais finos</li>
+                    </ul>
+                `;
+            } else {
+                html += `
+                    <h4>💡 Comportamento do Ferro:</h4>
+                    <ul>
+                        <li>O Ferro possui <span class="highlight">baixa resistividade</span> (9.71 × 10⁻⁸ Ω·m)</li>
+                        <li>É um <span class="highlight">bom condutor</span>, mas não tão eficiente quanto o cobre</li>
+                        <li>Apresenta menor inclinação no gráfico comparado ao Ni-Cr de mesmo diâmetro</li>
+                    </ul>
+                `;
+            }
+            
+            // Análise comparativa
+            html += `
+                <div style="margin-top: 25px; padding-top: 20px; border-top: 3px solid #dee2e6;">
+                    <h3>🔬 Análise Comparativa: Por que as Inclinações Mudam?</h3>
+                    
+                    <div style="background: white; padding: 20px; border-radius: 10px; margin: 15px 0;">
+                        <h4 style="color: #667eea;">1️⃣ Efeito do Material (Resistividade ρ)</h4>
+                        <p>A <span class="highlight">resistividade (ρ)</span> é uma propriedade intrínseca do material que determina sua capacidade de conduzir eletricidade:</p>
+                        <ul>
+                            <li><strong>Ni-Cr (ρ = 1.10 × 10⁻⁶ Ω·m):</strong> Alta resistividade → Maior oposição à corrente → Maior inclinação</li>
+                            <li><strong>Fe (ρ = 9.71 × 10⁻⁸ Ω·m):</strong> Baixa resistividade → Menor oposição à corrente → Menor inclinação</li>
+                        </ul>
+                        <div class="formula" style="display: block; text-align: center; margin: 15px 0;">
+                            Inclinação ∝ ρ (mantendo A constante)
+                        </div>
+                    </div>
+                    
+                    <div style="background: white; padding: 20px; border-radius: 10px; margin: 15px 0;">
+                        <h4 style="color: #667eea;">2️⃣ Efeito da Geometria (Área A)</h4>
+                        <p>A <span class="highlight">área da seção transversal (A)</span> afeta diretamente a facilidade de passagem da corrente:</p>
+                        <ul>
+                            <li><strong>Fios mais finos (menor A):</strong> Maior resistência → Maior inclinação</li>
+                            <li><strong>Fios mais grossos (maior A):</strong> Menor resistência → Menor inclinação</li>
+                        </ul>
+                        <div class="formula" style="display: block; text-align: center; margin: 15px 0;">
+                            Inclinação ∝ 1/A (mantendo ρ constante)
+                        </div>
+                    </div>
+                    
+                    <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin: 15px 0;">
+                        <h4 style="color: #856404;">🎯 Conclusão Final</h4>
+                        <p>A <strong>inclinação da reta</strong> no gráfico R × L é determinada por:</p>
+                        <div class="formula" style="display: block; text-align: center; margin: 15px 0; font-size: 18px;">
+                            Inclinação = ρ / A
+                        </div>
+                        <p>Portanto:</p>
+                        <ol>
+                            <li><strong>Material com maior ρ</strong> (Ni-Cr vs Fe) → <span class="highlight">maior inclinação</span></li>
+                            <li><strong>Fio com menor A</strong> (diâmetro menor) → <span class="highlight">maior inclinação</span></li>
+                            <li>A combinação destes fatores explica todas as diferenças observadas no experimento</li>
+                        </ol>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('analysisContent').innerHTML = html;
+        }
+        
+        // ============================================
+        // FUNÇÃO PRINCIPAL DE ATUALIZAÇÃO
+        // ============================================
+        
+        /**
+         * Atualiza todo o experimento quando o fio é alterado
+         */
+        function atualizarExperimento() {
+            const tipoFio = document.getElementById('wireSelect').value;
+            
+            try {
+                // Mostrar indicador de carregamento (opcional, para feedback visual)
+                const loading = document.getElementById('loadingIndicator');
+                loading.classList.add('active');
+                
+                // Pequeno delay para permitir que o loading apareça
+                setTimeout(() => {
+                    // Gerar dados
+                    const dados = gerarDadosFio(tipoFio);
+                    
+                    // Atualizar componentes
+                    atualizarTabela(dados);
+                    atualizarGrafico(dados, tipoFio);
+                    atualizarAnalise(tipoFio, dados);
+                    
+                    // Esconder loading
+                    loading.classList.remove('active');
+                    
+                    console.log(`Experimento atualizado: ${INFO_FIOS[tipoFio].nome}`);
+                }, 100);
+                
+            } catch (error) {
+                console.error('Erro ao atualizar experimento:', error);
+                document.getElementById('loadingIndicator').classList.remove('active');
+                alert('Ocorreu um erro ao atualizar o experimento. Por favor, tente novamente.');
+            }
+        }
+        
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
+        
+        // Adicionar event listener para mudança de seleção
+        document.getElementById('wireSelect').addEventListener('change', function(e) {
+            console.log('Fio alterado para:', e.target.value);
+            atualizarExperimento();
+        });
+        
+        // Inicializar o experimento quando a página carregar
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('Inicializando experimento...');
+            atualizarExperimento();
+        });
+        
+        // Garantir que o gráfico seja redimensionado quando a janela mudar
+        window.addEventListener('resize', function() {
+            if (chartInstance) {
+                chartInstance.resize();
+            }
+        });
+        
+        console.log('Script do experimento de resistividade carregado com sucesso!');
+    </script>
+</body>
+</html>

@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experimento de Resistividade - Lei de Ohm</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .select-wrapper {
+            display: inline-block;
+            margin: 0 15px;
+        }
+        
+        select {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 250px;
+        }
+        
+        select:hover {
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+        }
+        
+        label {
+            font-weight: bold;
+            color: #333;
+            font-size: 18px;
+            margin-right: 10px;
+        }
+        
+        .current-info {
+            background: linear-gradient(135deg, #e7f3ff 0%, #d4e6ff 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #0056b3;
+            border: 2px solid #b3d4ff;
+        }
+        
+        .current-value {
+            color: #dc3545;
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .tabs {
+            display: flex;
+            margin: 30px 0 20px 0;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .tab-button {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            bottom: -2px;
+        }
+        
+        .tab-button:hover {
+            color: #667eea;
+        }
+        
+        .tab-button.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .data-section {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .data-section {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .table-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .chart-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .full-width-chart {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h3 .icon {
+            font-size: 24px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        tr:hover {
+            background: #e9ecef;
+            transition: background 0.3s;
+        }
+        
+        canvas {
+            max-height: 400px;
+            width: 100% !important;
+        }
+        
+        .comparison-canvas {
+            max-height: 500px;
+        }
+        
+        .analysis {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .analysis h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .analysis h3 {
+            color: #667eea;
+            margin: 20px 0 10px 0;
+            font-size: 20px;
+        }
+        
+        .analysis h4 {
+            color: #555;
+            margin: 15px 0 10px 0;
+            font-size: 16px;
+        }
+        
+        .analysis ul, .analysis ol {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        
+        .analysis li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #856404;
+        }
+        
+        .formula {
+            background: #e7f3ff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        .comparison-table {
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        
+        .comparison-table table {
+            min-width: 600px;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 4px;
+            border-radius: 2px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-pdf {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .btn-csv {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+        
+        .btn-whatsapp {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+        }
+        
+        .btn-facebook {
+            background: linear-gradient(135deg, #1877F2, #0C5DC7);
+        }
+        
+        .btn-twitter {
+            background: linear-gradient(135deg, #1DA1F2, #0C85D0);
+        }
+        
+        .btn-linkedin {
+            background: linear-gradient(135deg, #0A66C2, #084482);
+        }
+        
+        .btn-email {
+            background: linear-gradient(135deg, #EA4335, #B31412);
+        }
+        
+        .btn-copy {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
+        
+        .social-share {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .toast.show {
+            display: block;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 20px;
+        }
+        
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="mainContent">
+        <h1>🧪 Experimento de Resistividade Elétrica</h1>
+        
+        <!-- Barra de Ações -->
+        <div class="action-bar">
+            <button class="btn btn-pdf" onclick="exportarPDF()">
+                📄 Exportar PDF
+            </button>
+            <button class="btn btn-csv" onclick="exportarDados()">
+                📊 Exportar CSV
+            </button>
+            <div class="social-share">
+                <button class="btn btn-whatsapp" onclick="compartilhar('whatsapp')">
+                    📱 WhatsApp
+                </button>
+                <button class="btn btn-facebook" onclick="compartilhar('facebook')">
+                    👍 Facebook
+                </button>
+                <button class="btn btn-twitter" onclick="compartilhar('twitter')">
+                    🐦 Twitter
+                </button>
+                <button class="btn btn-linkedin" onclick="compartilhar('linkedin')">
+                    💼 LinkedIn
+                </button>
+                <button class="btn btn-email" onclick="compartilhar('email')">
+                    ✉️ Email
+                </button>
+                <button class="btn btn-copy" onclick="copiarLink()">
+                    🔗 Copiar Link
+                </button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <label for="wireSelect">Selecione o tipo de fio para detalhes:</label>
+            <div class="select-wrapper">
+                <select id="wireSelect">
+                    <option value="nicr05">Ni-Cr (Diâmetro 0.5 mm)</option>
+                    <option value="nicr10">Ni-Cr (Diâmetro 1.0 mm)</option>
+                    <option value="nicr15">Ni-Cr (Diâmetro 1.5 mm)</option>
+                    <option value="fe15">Ferro (Diâmetro 1.5 mm)</option>
+                </select>
+            </div>
+            <div class="current-info">
+                ⚡ Corrente elétrica constante: <span class="current-value">I = 2.0 A</span>
+            </div>
+        </div>
+
+        <!-- Tabs para navegação -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('individual')">📊 Análise Individual</button>
+            <button class="tab-button" onclick="switchTab('comparison')">🔬 Comparação Geral</button>
+        </div>
+
+        <!-- Tab de Análise Individual -->
+        <div id="tabIndividual" class="tab-content active">
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p>Calculando dados...</p>
+            </div>
+
+            <div class="data-section">
+                <div class="table-container">
+                    <h3><span class="icon">📋</span> Dados Experimentais Calculados</h3>
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Comprimento L (m)</th>
+                                <th>Tensão V (V)</th>
+                                <th>Resistência R (Ω)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Preenchido via JavaScript -->
+                        </tbody>
+                    </table>
+                    <div style="margin-top: 15px; font-size: 14px; color: #666; text-align: center;">
+                        * Valores calculados usando V = R × I (Lei de Ohm)
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3><span class="icon">📈</span> Gráfico: Resistência × Comprimento</h3>
+                    <canvas id="resistivityChart"></canvas>
+                    <div id="chartInfo" style="margin-top: 10px; text-align: center; font-weight: bold; color: #667eea;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab de Comparação Geral -->
+        <div id="tabComparison" class="tab-content">
+            <div class="full-width-chart">
+                <h3><span class="icon">🔬</span> Gráfico Comparativo: Todos os Materiais</h3>
+                <canvas id="comparisonChart" class="comparison-canvas"></canvas>
+            </div>
+            
+            <div class="legend" id="comparisonLegend"></div>
+            
+            <div class="comparison-table">
+                <h3><span class="icon">📊</span> Tabela Comparativa de Resistências (Ω)</h3>
+                <table id="comparisonTable">
+                    <thead>
+                        <tr>
+                            <th>Comprimento (m)</th>
+                            <th>Ni-Cr 0.5mm</th>
+                            <th>Ni-Cr 1.0mm</th>
+                            <th>Ni-Cr 1.5mm</th>
+                            <th>Fe 1.5mm</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparisonTableBody">
+                        <!-- Preenchido via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="analysis">
+            <h2>🔬 Análise do Especialista em Física</h2>
+            <div id="analysisContent">
+                <!-- Preenchido via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast para notificações -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Modal para compartilhar por email -->
+    <div id="emailModal" class="modal">
+        <div class="modal-content">
+            <h3>📧 Compartilhar por Email</h3>
+            <input type="email" id="emailInput" placeholder="Digite o email do destinatário">
+            <input type="text" id="emailSubject" placeholder="Assunto" value="Experimento de Resistividade Elétrica">
+            <textarea id="emailBody" style="width: 100%; height: 100px; margin: 10px 0; padding: 10px;" placeholder="Mensagem"></textarea>
+            <div class="modal-buttons">
+                <button class="btn btn-copy" onclick="fecharModal()">Cancelar</button>
+                <button class="btn btn-pdf" onclick="enviarEmail()">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURAÇÕES E CONSTANTES FÍSICAS
+        // ============================================
+        
+        const CORRENTE = 2.0;
+        const COMPRIMENTOS = [0.5, 1.0, 1.5, 2.0, 2.5];
+        
+        const RESISTIVIDADES = {
+            'nicr': 1.10e-6,
+            'fe': 9.71e-8
+        };
+        
+        const DIAMETROS = {
+            '05': 0.0005,
+            '10': 0.0010,
+            '15': 0.0015
+        };
+        
+        const INFO_FIOS = {
+            'nicr05': { 
+                nome: 'Níquel-Cromo 0.5mm', 
+                material: 'Ni-Cr', 
+                diametro: '0.5 mm',
+                resistividade: '1.10 × 10⁻⁶ Ω·m',
+                cor: '#FF6384'
+            },
+            'nicr10': { 
+                nome: 'Níquel-Cromo 1.0mm', 
+                material: 'Ni-Cr', 
+                diametro: '1.0 mm',
+                resistividade: '1.10 × 10⁻⁶ Ω·m',
+                cor: '#36A2EB'
+            },
+            'nicr15': { 
+                nome: 'Níquel-Cromo 1.5mm', 
+                material: 'Ni-Cr', 
+                diametro: '1.5 mm',
+                resistividade: '1.10 × 10⁻⁶ Ω·m',
+                cor: '#FFCE56'
+            },
+            'fe15': { 
+                nome: 'Ferro 1.5mm', 
+                material: 'Fe', 
+                diametro: '1.5 mm',
+                resistividade: '9.71 × 10⁻⁸ Ω·m',
+                cor: '#4BC0C0'
+            }
+        };
+        
+        const TODOS_FIOS = ['nicr05', 'nicr10', 'nicr15', 'fe15'];
+        
+        // ============================================
+        // FUNÇÕES DE CÁLCULO
+        // ============================================
+        
+        function calcularArea(diametro) {
+            const raio = diametro / 2;
+            return Math.PI * raio * raio;
+        }
+        
+        function calcularResistencia(resistividade, comprimento, area) {
+            return (resistividade * comprimento) / area;
+        }
+        
+        function calcularTensao(resistencia) {
+            return resistencia * CORRENTE;
+        }
+        
+        function gerarDadosFio(tipoFio) {
+            let material, diametroCodigo;
+            
+            if (tipoFio.startsWith('nicr')) {
+                material = 'nicr';
+                diametroCodigo = tipoFio.replace('nicr', '');
+            } else if (tipoFio.startsWith('fe')) {
+                material = 'fe';
+                diametroCodigo = tipoFio.replace('fe', '');
+            }
+            
+            const resistividade = RESISTIVIDADES[material];
+            const diametro = DIAMETROS[diametroCodigo];
+            const area = calcularArea(diametro);
+            
+            return COMPRIMENTOS.map(comprimento => {
+                const resistencia = calcularResistencia(resistividade, comprimento, area);
+                const tensao = calcularTensao(resistencia);
+                
+                return {
+                    comprimento: comprimento,
+                    resistencia: parseFloat(resistencia.toFixed(4)),
+                    tensao: parseFloat(tensao.toFixed(4)),
+                    area: area,
+                    resistividade: resistividade
+                };
+            });
+        }
+        
+        function gerarTodosDados() {
+            const todosDados = {};
+            TODOS_FIOS.forEach(fio => {
+                todosDados[fio] = gerarDadosFio(fio);
+            });
+            return todosDados;
+        }
+        
+        // ============================================
+        // FUNÇÕES DE ATUALIZAÇÃO DA INTERFACE
+        // ============================================
+        
+        function atualizarTabela(dados) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            dados.forEach((item, index) => {
+                const row = document.createElement('tr');
+                
+                const tdComprimento = document.createElement('td');
+                tdComprimento.textContent = item.comprimento.toFixed(1);
+                
+                const tdTensao = document.createElement('td');
+                tdTensao.textContent = item.tensao.toFixed(4);
+                
+                const tdResistencia = document.createElement('td');
+                tdResistencia.textContent = item.resistencia.toFixed(4);
+                
+                row.appendChild(tdComprimento);
+                row.appendChild(tdTensao);
+                row.appendChild(tdResistencia);
+                
+                row.style.opacity = '0';
+                row.style.transform = 'translateY(10px)';
+                row.style.transition = 'all 0.3s ease';
+                
+                tbody.appendChild(row);
+                
+                setTimeout(() => {
+                    row.style.opacity = '1';
+                    row.style.transform = 'translateY(0)';
+                }, 50 * index);
+            });
+        }
+        
+        // Gráfico individual
+        let chartInstance = null;
+        
+        function atualizarGraficoIndividual(dados, tipoFio) {
+            const canvas = document.getElementById('resistivityChart');
+            const ctx = canvas.getContext('2d');
+            
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+            
+            const comprimentos = dados.map(item => item.comprimento);
+            const resistencias = dados.map(item => item.resistencia);
+            const inclinacao = resistencias[comprimentos.length - 1] / comprimentos[comprimentos.length - 1];
+            const infoFio = INFO_FIOS[tipoFio];
+            
+            chartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: `${infoFio.nome}`,
+                        data: comprimentos.map((l, i) => ({
+                            x: l,
+                            y: resistencias[i]
+                        })),
+                        backgroundColor: infoFio.cor,
+                        borderColor: infoFio.cor,
+                        borderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        showLine: true,
+                        tension: 0,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const ponto = context.raw;
+                                    return [
+                                        `Comprimento: ${ponto.x.toFixed(1)} m`,
+                                        `Resistência: ${ponto.y.toFixed(4)} Ω`,
+                                        `Tensão: ${(ponto.y * CORRENTE).toFixed(4)} V`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: {
+                                display: true,
+                                text: 'Comprimento L (metros)'
+                            },
+                            min: 0,
+                            max: 3.0,
+                            ticks: { stepSize: 0.5 }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Resistência R (Ohms)'
+                            },
+                            min: 0
+                        }
+                    }
+                }
+            });
+            
+            document.getElementById('chartInfo').innerHTML = 
+                `📐 Inclinação da reta (R/L): <span class="highlight">${inclinacao.toFixed(4)} Ω/m</span>`;
+        }
+        
+        // Gráfico comparativo
+        let comparisonChartInstance = null;
+        
+        function atualizarGraficoComparativo() {
+            const canvas = document.getElementById('comparisonChart');
+            const ctx = canvas.getContext('2d');
+            
+            if (comparisonChartInstance) {
+                comparisonChartInstance.destroy();
+                comparisonChartInstance = null;
+            }
+            
+            const todosDados = gerarTodosDados();
+            const datasets = TODOS_FIOS.map(fio => {
+                const dados = todosDados[fio];
+                const infoFio = INFO_FIOS[fio];
+                return {
+                    label: infoFio.nome,
+                    data: dados.map(item => ({
+                        x: item.comprimento,
+                        y: item.resistencia
+                    })),
+                    backgroundColor: infoFio.cor,
+                    borderColor: infoFio.cor,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    showLine: true,
+                    tension: 0,
+                    fill: false
+                };
+            });
+            
+            comparisonChartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 14 },
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Comparação: Resistência × Comprimento para Todos os Fios',
+                            font: { size: 16, weight: 'bold' },
+                            padding: 20
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const ponto = context.raw;
+                                    return [
+                                        `${context.dataset.label}`,
+                                        `Comprimento: ${ponto.x.toFixed(1)} m`,
+                                        `Resistência: ${ponto.y.toFixed(4)} Ω`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: {
+                                display: true,
+                                text: 'Comprimento L (metros)',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            min: 0,
+                            max: 3.0,
+                            ticks: { 
+                                stepSize: 0.5,
+                                callback: value => value.toFixed(1) + ' m'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Resistência R (Ohms)',
+                                font: { size: 14, weight: 'bold' }
+                            },
+                            min: 0,
+                            ticks: {
+                                callback: value => value.toFixed(3) + ' Ω'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            atualizarLegendaComparativa();
+            atualizarTabelaComparativa(todosDados);
+        }
+        
+        function atualizarLegendaComparativa() {
+            const legendDiv = document.getElementById('comparisonLegend');
+            legendDiv.innerHTML = TODOS_FIOS.map(fio => {
+                const info = INFO_FIOS[fio];
+                const dados = gerarDadosFio(fio);
+                const inclinacao = dados[dados.length - 1].resistencia / dados[dados.length - 1].comprimento;
+                return `
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: ${info.cor};"></div>
+                        <span>${info.nome}: <strong>${inclinacao.toFixed(4)} Ω/m</strong></span>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function atualizarTabelaComparativa(todosDados) {
+            const tbody = document.getElementById('comparisonTableBody');
+            tbody.innerHTML = '';
+            
+            COMPRIMENTOS.forEach((comprimento, index) => {
+                const row = document.createElement('tr');
+                
+                const tdComprimento = document.createElement('td');
+                tdComprimento.textContent = comprimento.toFixed(1);
+                row.appendChild(tdComprimento);
+                
+                TODOS_FIOS.forEach(fio => {
+                    const td = document.createElement('td');
+                    const valor = todosDados[fio][index].resistencia;
+                    td.textContent = valor.toFixed(4);
+                    
+                    if (fio === 'nicr05') {
+                        td.style.fontWeight = 'bold';
+                        td.style.color = '#FF6384';
+                    } else if (valor < 0.5) {
+                        td.style.color = '#4BC0C0';
+                    }
+                    
+                    row.appendChild(td);
+                });
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        function atualizarAnalise(tipoFio, dados) {
+            const infoFio = INFO_FIOS[tipoFio];
+            const todosDados = gerarTodosDados();
+            const inclinacao = dados[dados.length - 1].resistencia / dados[dados.length - 1].comprimento;
+            
+            let maiorInclinacao = { fio: '', valor: 0 };
+            let menorInclinacao = { fio: '', valor: Infinity };
+            
+            TODOS_FIOS.forEach(fio => {
+                const dadosFio = todosDados[fio];
+                const incl = dadosFio[dadosFio.length - 1].resistencia / dadosFio[dadosFio.length - 1].comprimento;
+                if (incl > maiorInclinacao.valor) {
+                    maiorInclinacao = { fio: INFO_FIOS[fio].nome, valor: incl };
+                }
+                if (incl < menorInclinacao.valor) {
+                    menorInclinacao = { fio: INFO_FIOS[fio].nome, valor: incl };
+                }
+            });
+            
+            let html = `
+                <h3>📋 Análise para o fio de ${infoFio.nome}</h3>
+                
+                <div class="formula">
+                    R = ρ × L / A &nbsp;&nbsp;|&nbsp;&nbsp; V = R × I
+                </div>
+                
+                <h4>🔍 Características do Experimento:</h4>
+                <ul>
+                    <li><strong>Material:</strong> ${infoFio.material} com resistividade ρ = ${infoFio.resistividade}</li>
+                    <li><strong>Diâmetro:</strong> ${infoFio.diametro} (Área = ${dados[0].area.toExponential(2)} m²)</li>
+                    <li><strong>Corrente:</strong> Constante em ${CORRENTE} A</li>
+                    <li><strong>Inclinação experimental:</strong> ${inclinacao.toFixed(4)} Ω/m</li>
+                </ul>
+            `;
+            
+            if (tipoFio.includes('nicr')) {
+                html += `
+                    <h4>💡 Comportamento do Níquel-Cromo:</h4>
+                    <ul>
+                        <li>O Ni-Cr possui <span class="highlight">alta resistividade</span> (1.10 × 10⁻⁶ Ω·m)</li>
+                        <li>Esta liga é cerca de <span class="highlight">11.3 vezes mais resistiva</span> que o Ferro puro</li>
+                        <li>Ideal para elementos de aquecimento devido à sua estabilidade térmica</li>
+                    </ul>
+                `;
+            } else {
+                html += `
+                    <h4>💡 Comportamento do Ferro:</h4>
+                    <ul>
+                        <li>O Ferro possui <span class="highlight">baixa resistividade</span> (9.71 × 10⁻⁸ Ω·m)</li>
+                        <li>É um <span class="highlight">bom condutor</span>, mas não tão eficiente quanto o cobre</li>
+                        <li>Apresenta menor inclinação no gráfico comparado ao Ni-Cr de mesmo diâmetro</li>
+                    </ul>
+                `;
+            }
+            
+            html += `
+                <div style="margin-top: 25px; padding-top: 20px; border-top: 3px solid #dee2e6;">
+                    <h3>🔬 Análise Comparativa Completa</h3>
+                    
+                    <div style="background: white; padding: 20px; border-radius: 10px; margin: 15px 0;">
+                        <h4 style="color: #667eea;">📊 Ranking de Inclinações (R/L):</h4>
+                        <ol>
+                            <li><strong>${maiorInclinacao.fio}:</strong> ${maiorInclinacao.valor.toFixed(4)} Ω/m (Maior resistência)</li>
+                            <li><strong>${menorInclinacao.fio}:</strong> ${menorInclinacao.valor.toFixed(4)} Ω/m (Menor resistência)</li>
+                        </ol>
+                    </div>
+                    
+                    <div style="background: white; padding: 20px; border-radius: 10px; margin: 15px 0;">
+                        <h4 style="color: #667eea;">1️⃣ Efeito do Material (Resistividade ρ)</h4>
+                        <p>A <span class="highlight">resistividade (ρ)</span> determina a capacidade de condução:</p>
+                        <ul>
+                            <li><strong>Ni-Cr (ρ = 1.10 × 10⁻⁶ Ω·m):</strong> Alta resistividade → Maior inclinação</li>
+                            <li><strong>Fe (ρ = 9.71 × 10⁻⁸ Ω·m):</strong> Baixa resistividade → Menor inclinação</li>
+                        </ul>
+                        <div class="formula" style="display: block; text-align: center; margin: 15px 0;">
+                            Para mesmo diâmetro: Inclinação(Ni-Cr) / Inclinação(Fe) = ρ(Ni-Cr) / ρ(Fe) ≈ 11.3
+                        </div>
+                    </div>
+                    
+                    <div style="background: white; padding: 20px; border-radius: 10px; margin: 15px 0;">
+                        <h4 style="color: #667eea;">2️⃣ Efeito da Geometria (Área A)</h4>
+                        <p>A <span class="highlight">área da seção transversal (A)</span> afeta a resistência:</p>
+                        <ul>
+                            <li><strong>Ø 0.5mm (menor área):</strong> Maior resistência → Maior inclinação</li>
+                            <li><strong>Ø 1.5mm (maior área):</strong> Menor resistência → Menor inclinação</li>
+                        </ul>
+                        <div class="formula" style="display: block; text-align: center; margin: 15px 0;">
+                            Para mesmo material: R ∝ 1/A ∝ 1/d²
+                        </div>
+                    </div>
+                    
+                    <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin: 15px 0;">
+                        <h4 style="color: #856404;">🎯 Conclusão Final</h4>
+                        <p>A <strong>inclinação da reta</strong> no gráfico R × L é determinada por:</p>
+                        <div class="formula" style="display: block; text-align: center; margin: 15px 0; font-size: 18px;">
+                            Inclinação = ρ / A = ρ / (π·d²/4)
+                        </div>
+                        <p>Fatores que <strong>aumentam</strong> a inclinação:</p>
+                        <ol>
+                            <li>✅ Maior resistividade (ρ) do material</li>
+                            <li>✅ Menor diâmetro (d) do fio</li>
+                        </ol>
+                        <p style="margin-top: 15px;">
+                            <strong>Exemplo prático:</strong> O fio de Ni-Cr 0.5mm tem a maior inclinação 
+                            (${maiorInclinacao.valor.toFixed(4)} Ω/m) por combinar alta resistividade 
+                            com pequena área, enquanto o Fe 1.5mm tem a menor (${menorInclinacao.valor.toFixed(4)} Ω/m) 
+                            por ter baixa resistividade e grande área.
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('analysisContent').innerHTML = html;
+        }
+        
+        // ============================================
+        // FUNÇÕES DE EXPORTAÇÃO E COMPARTILHAMENTO
+        // ============================================
+        
+        async function exportarPDF() {
+            showToast('Gerando PDF... Por favor, aguarde.');
+            
+            const element = document.getElementById('mainContent');
+            const opt = {
+                margin: [10, 10],
+                filename: 'experimento_resistividade.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    logging: false,
+                    letterRendering: true,
+                    useCORS: true
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait' 
+                }
+            };
+            
+            try {
+                await html2pdf().set(opt).from(element).save();
+                showToast('✅ PDF exportado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao gerar PDF:', error);
+                showToast('❌ Erro ao gerar PDF. Tente novamente.');
+            }
+        }
+        
+        function exportarDados() {
+            const todosDados = gerarTodosDados();
+            let csv = 'Comprimento (m),Ni-Cr 0.5mm (Ω),Ni-Cr 1.0mm (Ω),Ni-Cr 1.5mm (Ω),Fe 1.5mm (Ω)\n';
+            
+            COMPRIMENTOS.forEach((comprimento, index) => {
+                const linha = [
+                    comprimento.toFixed(1),
+                    ...TODOS_FIOS.map(fio => todosDados[fio][index].resistencia.toFixed(4))
+                ].join(',');
+                csv += linha + '\n';
+            });
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'dados_resistividade.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast('✅ Dados CSV exportados com sucesso!');
+        }
+        
+        function compartilhar(platform) {
+            const url = encodeURIComponent(window.location.href);
+            const title = encodeURIComponent('Experimento de Resistividade Elétrica - Lei de Ohm');
+            const description = encodeURIComponent('Simulação interativa de resistividade elétrica com diferentes materiais e diâmetros. Inclui gráficos, análises e comparações.');
+            
+            let shareUrl = '';
+            
+            switch(platform) {
+                case 'whatsapp':
+                    shareUrl = `https://wa.me/?text=${title}%0A${description}%0A${url}`;
+                    break;
+                case 'facebook':
+                    shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${description}`;
+                    break;
+                case 'twitter':
+                    shareUrl = `https://twitter.com/intent/tweet?text=${title}&url=${url}&hashtags=fisica,resistividade,educacao`;
+                    break;
+                case 'linkedin':
+                    shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+                    break;
+                case 'email':
+                    abrirModalEmail();
+                    return;
+            }
+            
+            if (shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=400');
+            }
+        }
+        
+        function abrirModalEmail() {
+            document.getElementById('emailModal').classList.add('show');
+            const description = `Olá! Convido você a explorar este experimento interativo de resistividade elétrica.\n\n` +
+                              `O aplicativo simula o comportamento de diferentes fios (Ni-Cr e Ferro) com vários diâmetros, ` +
+                              `seguindo a Lei de Ohm.\n\n` +
+                              `Inclui gráficos comparativos, análises detalhadas e exportação de dados.\n\n` +
+                              `Acesse: ${window.location.href}`;
+            document.getElementById('emailBody').value = description;
+        }
+        
+        function fecharModal() {
+            document.getElementById('emailModal').classList.remove('show');
+        }
+        
+        function enviarEmail() {
+            const email = document.getElementById('emailInput').value;
+            const subject = document.getElementById('emailSubject').value;
+            const body = document.getElementById('emailBody').value;
+            
+            if (!email) {
+                alert('Por favor, digite um endereço de email.');
+                return;
+            }
+            
+            const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoLink;
+            fecharModal();
+            showToast('✅ Email preparado com sucesso!');
+        }
+        
+        async function copiarLink() {
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                showToast('✅ Link copiado para a área de transferência!');
+            } catch (error) {
+                // Fallback para navegadores antigos
+                const tempInput = document.createElement('input');
+                tempInput.value = window.location.href;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                showToast('✅ Link copiado!');
+            }
+        }
+        
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // ============================================
+        // FUNÇÕES DE NAVEGAÇÃO
+        // ============================================
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            if (tabName === 'individual') {
+                document.getElementById('tabIndividual').classList.add('active');
+            } else if (tabName === 'comparison') {
+                document.getElementById('tabComparison').classList.add('active');
+                setTimeout(atualizarGraficoComparativo, 100);
+            }
+        }
+        
+        // ============================================
+        // FUNÇÃO PRINCIPAL DE ATUALIZAÇÃO
+        // ============================================
+        
+        function atualizarExperimento() {
+            const tipoFio = document.getElementById('wireSelect').value;
+            
+            try {
+                const dados = gerarDadosFio(tipoFio);
+                
+                atualizarTabela(dados);
+                atualizarGraficoIndividual(dados, tipoFio);
+                atualizarAnalise(tipoFio, dados);
+                
+                if (document.getElementById('tabComparison').classList.contains('active')) {
+                    atualizarGraficoComparativo();
+                }
+                
+                console.log(`Experimento atualizado: ${INFO_FIOS[tipoFio].nome}`);
+                
+            } catch (error) {
+                console.error('Erro ao atualizar experimento:', error);
+                showToast('❌ Erro ao atualizar o experimento.');
+            }
+        }
+        
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
+        
+        document.getElementById('wireSelect').addEventListener('change', atualizarExperimento);
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('Inicializando experimento...');
+            atualizarExperimento();
+            
+            // Adicionar metadados para melhor compartilhamento
+            adicionarMetaTags();
+        });
+        
+        window.addEventListener('resize', function() {
+            if (chartInstance) chartInstance.resize();
+            if (comparisonChartInstance) comparisonChartInstance.resize();
+        });
+        
+        function adicionarMetaTags() {
+            const metaTags = [
+                { property: 'og:title', content: 'Experimento de Resistividade Elétrica' },
+                { property: 'og:description', content: 'Simulação interativa de resistividade elétrica com Ni-Cr e Ferro' },
+                { property: 'og:type', content: 'website' },
+                { property: 'og:url', content: window.location.href },
+                { name: 'twitter:card', content: 'summary_large_image' },
+                { name: 'twitter:title', content: 'Experimento de Resistividade Elétrica' },
+                { name: 'twitter:description', content: 'Simulação interativa de resistividade elétrica' }
+            ];
+            
+            metaTags.forEach(meta => {
+                const element = document.createElement('meta');
+                Object.keys(meta).forEach(key => {
+                    element.setAttribute(key, meta[key]);
+                });
+                document.head.appendChild(element);
+            });
+        }
+        
+        // Fechar modal clicando fora
+        document.getElementById('emailModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModal();
+            }
+        });
+        
+        console.log('Script do experimento de resistividade carregado com sucesso!');
+    </script>
+</body>
+</html>

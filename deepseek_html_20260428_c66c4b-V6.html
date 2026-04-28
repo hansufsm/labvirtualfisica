@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Virtual de Resistividade - Plataforma Educacional Completa</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js">
+    </script>
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .app-header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .app-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .app-title h1 {
+            font-size: 24px;
+            color: var(--dark);
+        }
+
+        .user-stats {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            background: var(--light);
+            padding: 10px 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .main-nav {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            background: var(--light);
+            color: var(--dark);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            flex: 1;
+            justify-content: center;
+            min-width: 120px;
+        }
+
+        .nav-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .main-content {
+            display: grid;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .panel-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .experiment-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .control-card {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .control-card:hover {
+            border-color: var(--primary);
+        }
+
+        .control-card h4 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        select,
+        input[type="range"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        select:focus,
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 8px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid var(--primary);
+            cursor: pointer;
+        }
+
+        .slider-value-display {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .preset-btn {
+            padding: 6px 12px;
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .preset-btn:hover,
+        .preset-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Termômetro Virtual */
+        .thermometer-container {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .thermometer-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .thermometer-graphic {
+            position: relative;
+            width: 80px;
+            height: 250px;
+            background: linear-gradient(to bottom, #ff4444, #ff8800, #ffcc00, #44bb44, #4444ff);
+            border-radius: 40px;
+            border: 3px solid white;
+            overflow: hidden;
+        }
+
+        .thermometer-mercury {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, #ff0000, #cc0000);
+            transition: height 0.5s ease;
+            border-radius: 0 0 40px 40px;
+        }
+
+        .thermometer-scale {
+            position: absolute;
+            right: -50px;
+            top: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 12px;
+            color: white;
+        }
+
+        .thermometer-info {
+            text-align: left;
+        }
+
+        .temp-value {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ff6b6b;
+            text-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        }
+
+        .temp-status {
+            font-size: 18px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+
+        .temp-status.safe {
+            background: #27ae60;
+            color: white;
+        }
+        .temp-status.warm {
+            background: #f39c12;
+            color: white;
+        }
+        .temp-status.hot {
+            background: #e74c3c;
+            color: white;
+        }
+        .temp-status.danger {
+            background: #8e44ad;
+            color: white;
+        }
+
+        /* Accordion */
+        .accordion {
+            margin-top: 20px;
+        }
+
+        .accordion-item {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            background: var(--light);
+            padding: 15px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .accordion-header:hover {
+            background: #e9ecef;
+        }
+
+        .accordion-header.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .accordion-icon {
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+
+        .accordion-header.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-body {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.5s ease;
+        }
+
+        .accordion-body.open {
+            max-height: 5000px;
+            padding: 20px;
+        }
+
+        /* Badges e Conquistas */
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .achievement-card {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s;
+            opacity: 0.5;
+            filter: grayscale(100%);
+        }
+
+        .achievement-card.unlocked {
+            opacity: 1;
+            filter: grayscale(0%);
+            animation: achievementPopup 0.5s ease;
+        }
+
+        @keyframes achievementPopup {
+            0% {
+                transform: scale(0.8);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .achievement-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .mission-card {
+            background: linear-gradient(135deg, var(--light), white);
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .mission-card.completed {
+            border-color: var(--success);
+            background: linear-gradient(135deg, #d4edda, white);
+        }
+
+        /* Visualização da Seção Transversal */
+        .cross-section-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        canvas#crossSectionCanvas {
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .calculator-result {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .calculator-result.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        .btn-warning {
+            background: var(--warning);
+            color: var(--dark);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-info {
+            background: var(--info);
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 13px;
+        }
+
+        th {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        tr:hover {
+            background: #e9ecef;
+            transition: background 0.3s;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--dark);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 2000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .voltage-highlight {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: 2px solid #f39c12;
+            color: #856404;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: none;
+        }
+
+        .tutorial-tooltip {
+            position: absolute;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 300px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+        }
+
+        .thermal-warning {
+            background: linear-gradient(135deg, #ffe0e0, #ffcccc);
+            border: 2px solid #e74c3c;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            color: #c0392b;
+        }
+
+        .formula-box {
+            background: #1a1a2e;
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            .nav-btn {
+                font-size: 12px;
+                padding: 10px;
+            }
+            .app-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .thermometer-display {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container" id="appContainer">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="app-title">
+                <span style="font-size: 40px;">🧪</span>
+                <div>
+                    <h1>Lab Virtual de Resistividade</h1>
+                    <small style="color: #666;">Plataforma Educacional Interativa | V = 5V constante</small>
+                </div>
+            </div>
+            <div class="user-stats">
+                <div class="stat-badge"><span>🏆</span><span id="achievementCount">0/10</span></div>
+                <div class="stat-badge"><span>✅</span><span id="missionCount">0/4</span></div>
+                <div class="stat-badge"><span>🧪</span><span id="experimentCount">0</span></div>
+                <button class="btn btn-info" onclick="toggleDarkMode()" title="Modo Escuro">🌓</button>
+            </div>
+        </div>
+
+        <!-- Navegação Principal -->
+        <div class="main-nav" id="mainNav">
+            <button class="nav-btn active" data-section="experiment">🔬 Experimento</button>
+            <button class="nav-btn" data-section="missions">🎯 Missões</button>
+            <button class="nav-btn" data-section="achievements">🏆 Conquistas</button>
+            <button class="nav-btn" data-section="journal">📓 Diário</button>
+            <button class="nav-btn" data-section="calculator">🧮 Calculadora</button>
+            <button class="nav-btn" data-section="applications">🌍 Aplicações</button>
+            <button class="nav-btn" data-section="collaborate">👥 Colaborar</button>
+            <button class="nav-btn" data-section="settings">⚙️ Mais</button>
+        </div>
+
+        <!-- Conteúdo Principal -->
+        <div class="main-content" id="mainContent">
+            <!-- Seção: Experimento -->
+            <div class="section" id="section-experiment" style="display: block;">
+                <!-- Controles -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">🎛️ Controles do Experimento</div>
+                        <button class="btn btn-info" onclick="iniciarTutorial()">📖 Tutorial</button>
+                    </div>
+
+                    <!-- DESTAQUE: Tensão Constante -->
+                    <div class="voltage-highlight" style="margin-bottom: 20px;">
+                        ⚡ <strong>TENSÃO CONSTANTE NA FONTE: V = 5.0 V</strong> ⚡
+                        <br><small>A corrente (I) e a temperatura (T) variam conforme o condutor | I = V/R</small>
+                    </div>
+
+                    <div class="experiment-controls">
+                        <div class="control-card">
+                            <h4>🔬 Material do Condutor</h4>
+                            <select id="materialSelect" onchange="atualizarExperimento()">
+                                <option value="nicr">Níquel-Cromo (Ni-Cr)</option>
+                                <option value="fe">Ferro (Fe)</option>
+                                <option value="cu">Cobre (Cu)</option>
+                                <option value="al">Alumínio (Al)</option>
+                            </select>
+                            <div id="resistivityInfo" style="margin-top: 10px; font-size: 14px;"></div>
+                        </div>
+
+                        <div class="control-card">
+                            <h4>📏 Diâmetro do Fio</h4>
+                            <input type="range" id="diameterSlider" min="0.36" max="3.6" step="0.01" value="1.5"
+                            oninput="atualizarSliderValor()">
+                            <div class="slider-value-display">
+                                <span id="diameterValue">1.50</span> mm
+                            </div>
+                            <div class="preset-buttons">
+                                <button class="preset-btn" onclick="definirDiametro(0.36)">0.36</button>
+                                <button class="preset-btn" onclick="definirDiametro(0.72)">0.72</button>
+                                <button class="preset-btn active" onclick="definirDiametro(1.50)">1.50</button>
+                                <button class="preset-btn" onclick="definirDiametro(2.50)">2.50</button>
+                                <button class="preset-btn" onclick="definirDiametro(3.60)">3.60</button>
+                            </div>
+                            <div id="areaInfo" style="text-align: center; margin-top: 10px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Visualização da Seção Transversal (CIRCULAR) -->
+                    <div class="cross-section-container">
+                        <canvas id="crossSectionCanvas" width="300" height="300"></canvas>
+                    </div>
+
+                    <!-- TERMÔMETRO VIRTUAL -->
+                    <div class="thermometer-container">
+                        <h3 style="margin-bottom: 15px;">🌡️ Termômetro Virtual do Condutor</h3>
+                        <div class="thermometer-display">
+                            <div class="thermometer-graphic">
+                                <div class="thermometer-mercury" id="thermometerMercury" style="height: 10%;"></div>
+                                <div class="thermometer-scale">
+                                    <span>500°C</span><span>400°C</span><span>300°C</span><span>200°C</span><span>100°C</span><span>25°C</span>
+                                </div>
+                            </div>
+                            <div class="thermometer-info">
+                                <div>Temperatura estimada:</div>
+                                <div class="temp-value" id="tempValue">25°C</div>
+                                <div class="temp-status safe" id="tempStatus">✅ Seguro ao toque</div>
+                                <div style="margin-top: 10px; font-size: 14px; color: #aaa;">
+                                    Potência dissipada: <strong id="powerDissipated">0 W</strong><br>
+                                    Corrente: <strong id="thermCurrent">0 A</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <small style="color: #aaa; display: block; margin-top: 10px;">
+                            * Estimativa para L=1m, convecção natural (h≈15 W/m²·K), T₀=25°C
+                        </small>
+                    </div>
+
+                    <!-- Info em Tempo Real -->
+                    <div class="grid-3" style="margin-top: 20px;">
+                        <div class="control-card">
+                            <h4>⚡ Tensão (Fonte)</h4>
+                            <div style="font-size: 24px; text-align: center; color: #f39c12;">5.0 V</div>
+                            <small style="display: block; text-align: center;">Constante</small>
+                        </div>
+                        <div class="control-card">
+                            <h4>📐 Resistência/m</h4>
+                            <div id="currentResistancePerMeter" style="font-size: 24px; text-align: center;">-</div>
+                            <small style="display: block; text-align: center;">R/L = ρ/A</small>
+                        </div>
+                        <div class="control-card">
+                            <h4>🔌 Corrente (L=1m)</h4>
+                            <div id="currentForOneMeter" style="font-size: 24px; text-align: center;">-</div>
+                            <small style="display: block; text-align: center;">I = V/R</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela e Gráfico -->
+                <div class="grid-2" style="margin-top: 20px;">
+                    <div class="panel">
+                        <div class="panel-title">📊 Dados Experimentais (V = 5.0 V, L: 0 a 1m)</div>
+                        <table id="dataTable" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>L (m)</th>
+                                    <th>R (Ω)</th>
+                                    <th>I (A)</th>
+                                    <th>P (W)</th>
+                                    <th>🌡️ T (°C)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-title">📈 Gráfico: Resistência × Comprimento</div>
+                        <canvas id="resistivityChart"></canvas>
+                        <div id="chartInfo" style="text-align: center; margin-top: 10px; font-weight: bold; color: var(--primary);"></div>
+                    </div>
+                </div>
+
+                <!-- ACCORDION: Leitura Extra sobre Temperatura -->
+                <div class="panel" style="margin-top: 20px;">
+                    <div class="panel-header">
+                        <div class="panel-title">📚 Leitura Extra: Análise Térmica do Condutor</div>
+                        <small style="color: #666;">Clique nos tópicos para expandir</small>
+                    </div>
+                    <div class="accordion" id="thermalAccordion">
+                        <!-- Item 1: Efeito Joule -->
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <span>🔥 1. Efeito Joule e Potência Dissipada</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-body">
+                                <p>Quando uma corrente elétrica percorre um condutor, ocorre o <strong>Efeito Joule</strong>: a energia elétrica é convertida em calor devido às colisões dos elétrons com os átomos do material.</p>
+                                
+                                <div class="formula-box">
+                                    <strong>Potência Dissipada:</strong><br>
+                                    P = R × I² = V × I = V²/R<br><br>
+                                    <strong>Com V = 5V constante:</strong><br>
+                                    P = 25/R (Watts)
+                                </div>
+                                
+                                <p><strong>Exemplos com V=5V, L=1m:</strong></p>
+                                <ul>
+                                    <li>Ni-Cr 0.5mm (R=5.60Ω): P = 25/5.60 = <strong>4.46 W</strong> (como uma lâmpada LED)</li>
+                                    <li>Ni-Cr 1.5mm (R=0.62Ω): P = 25/0.62 = <strong>40.3 W</strong> (como um ferro de solda!)</li>
+                                    <li>Cu 1.5mm (R=0.0095Ω): P = 25/0.0095 = <strong>2632 W</strong> (teórico - a fonte limitaria!)</li>
+                                </ul>
+                                
+                                <div class="thermal-warning">
+                                    ⚠️ <strong>Atenção:</strong> Potências acima de 10W em fios finos podem causar aquecimento significativo. Fios de cobre com V=5V constante gerariam correntes extremamente altas - na prática, fontes de bancada têm limite de corrente (~3-5A).
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 2: Equilíbrio Térmico -->
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <span>🌡️ 2. Temperatura de Equilíbrio</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-body">
+                                <p>O condutor aquece até atingir um <strong>equilíbrio térmico</strong>, onde o calor gerado (Efeito Joule) iguala o calor perdido para o ambiente (convecção + radiação).</p>
+                                
+                                <div class="formula-box">
+                                    <strong>Temperatura de Equilíbrio (modelo simplificado):</strong><br>
+                                    ΔT = T - T₀ = P / (h × A<sub>superficial</sub>)<br><br>
+                                    <strong>Onde:</strong><br>
+                                    h = coeficiente de convecção (≈15 W/m²·K para ar parado)<br>
+                                    A<sub>superficial</sub> = π × d × L (área lateral do fio)<br>
+                                    T₀ = 25°C (temperatura ambiente)
+                                </div>
+                                
+                                <p><strong>Exemplo: Ni-Cr 0.5mm, L=1m, V=5V</strong></p>
+                                <ul>
+                                    <li>P = 4.46 W</li>
+                                    <li>A<sub>superficial</sub> = π × 0.0005 × 1 = 0.00157 m²</li>
+                                    <li>ΔT = 4.46 / (15 × 0.00157) = <strong>189°C</strong></li>
+                                    <li>T<sub>final</sub> = 25 + 189 = <strong>214°C</strong> 🔥</li>
+                                </ul>
+                                
+                                <p>Com <strong>ventilação forçada</strong> (h=50 W/m²·K):</p>
+                                <ul>
+                                    <li>ΔT = 4.46 / (50 × 0.00157) = <strong>57°C</strong></li>
+                                    <li>T<sub>final</sub> = <strong>82°C</strong> (bem mais frio!)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Item 3: Variação da Resistividade -->
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <span>📈 3. Efeito da Temperatura na Resistividade</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-body">
+                                <p>A resistividade dos materiais <strong>aumenta com a temperatura</strong> (para metais), criando um efeito de feedback:</p>
+                                
+                                <div class="formula-box">
+                                    <strong>Resistividade em função da temperatura:</strong><br>
+                                    ρ(T) = ρ₀ × [1 + α × (T - T₀)]<br><br>
+                                    <strong>Coeficientes térmicos (α):</strong><br>
+                                    Ni-Cr: α ≈ 0.0004 /°C (muito estável - ideal para resistências!)<br>
+                                    Cu: α ≈ 0.0039 /°C (varia bastante)<br>
+                                    Fe: α ≈ 0.0050 /°C<br>
+                                    Al: α ≈ 0.0040 /°C
+                                </div>
+                                
+                                <p><strong>Exemplo com Cu 1.5mm, L=1m, V=5V:</strong></p>
+                                <ul>
+                                    <li>A 25°C: R = 0.0095Ω, I = 526A (teórico!)</li>
+                                    <li>A 100°C: R = 0.0095 × [1 + 0.0039 × 75] = 0.0123Ω</li>
+                                    <li>I = 5/0.0123 = 406A (ainda extremamente alto)</li>
+                                    <li><strong>Conclusão:</strong> Para condutores de baixa resistência, V=5V constante não é prático!</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Item 4: Convecção e Radiação -->
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <span>💨 4. Mecanismos de Perda de Calor</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-body">
+                                <p>O condutor perde calor para o ambiente por <strong>três mecanismos</strong>:</p>
+                                
+                                <h4>🔹 Convecção Natural (domina em T < 300°C)</h4>
+                                <div class="formula-box">
+                                    P<sub>conv</sub> = h × A × ΔT<br>
+                                    h ≈ 1.32 × (ΔT/d)<sup>0.25</sup> W/m²·K
+                                </div>
+                                <p>O coeficiente h <strong>não é constante</strong> - aumenta com ΔT e diminui com o diâmetro.</p>
+                                
+                                <h4>🔹 Radiação Térmica (importante em T > 300°C)</h4>
+                                <div class="formula-box">
+                                    P<sub>rad</sub> = ε × σ × A × (T⁴ - T₀⁴)<br>
+                                    ε (emissividade): Ni-Cr ≈ 0.8, Cu polido ≈ 0.05<br>
+                                    σ = 5.67×10⁻⁸ W/m²·K⁴ (Stefan-Boltzmann)
+                                </div>
+                                
+                                <h4>🔹 Condução (pelas extremidades)</h4>
+                                <p>Calor conduzido para os terminais de conexão. Significativo apenas para fios muito curtos (L < 0.1m).</p>
+                                
+                                <div class="thermal-warning">
+                                    💡 <strong>Nota:</strong> Nosso termômetro virtual usa um modelo simplificado com h=15 W/m²·K constante. Para temperaturas acima de 300°C, o valor real seria <strong>menor</strong> que o calculado, pois a radiação ajuda a resfriar.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 5: Tabela Comparativa -->
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <span>📊 5. Tabela Comparativa de Aquecimento</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-body">
+                                <p><strong>Condições: V=5V, L=1m, T₀=25°C, h=15 W/m²·K</strong></p>
+                                <table style="font-size: 12px;">
+                                    <thead>
+                                        <tr>
+                                            <th>Material</th>
+                                            <th>Ø (mm)</th>
+                                            <th>R (Ω)</th>
+                                            <th>I (A)</th>
+                                            <th>P (W)</th>
+                                            <th>ΔT (°C)</th>
+                                            <th>T_final (°C)</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Ni-Cr</strong></td>
+                                            <td>0.36</td>
+                                            <td>10.82</td>
+                                            <td>0.46</td>
+                                            <td>2.31</td>
+                                            <td>136</td>
+                                            <td style="color: #e74c3c; font-weight: bold;">161</td>
+                                            <td>⚠️ Quente</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Ni-Cr</strong></td>
+                                            <td>0.50</td>
+                                            <td>5.60</td>
+                                            <td>0.89</td>
+                                            <td>4.46</td>
+                                            <td>189</td>
+                                            <td style="color: #e74c3c; font-weight: bold;">214</td>
+                                            <td>🔥 Muito Quente</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Ni-Cr</strong></td>
+                                            <td>1.00</td>
+                                            <td>1.40</td>
+                                            <td>3.57</td>
+                                            <td>17.86</td>
+                                            <td>379</td>
+                                            <td style="color: #8e44ad; font-weight: bold;">404</td>
+                                            <td>☠️ Incandescente</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Ni-Cr</strong></td>
+                                            <td>1.50</td>
+                                            <td>0.62</td>
+                                            <td>8.06</td>
+                                            <td>40.32</td>
+                                            <td>571</td>
+                                            <td style="color: #8e44ad; font-weight: bold;">596</td>
+                                            <td>☠️ Incandescente</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Fe</strong></td>
+                                            <td>1.50</td>
+                                            <td>0.055</td>
+                                            <td>90.9*</td>
+                                            <td>454*</td>
+                                            <td>6428*</td>
+                                            <td style="color: #000;">6453*</td>
+                                            <td>☠️ Fusão*</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Cu</strong></td>
+                                            <td>1.50</td>
+                                            <td>0.0095</td>
+                                            <td>526*</td>
+                                            <td>2632*</td>
+                                            <td>37262*</td>
+                                            <td style="color: #000;">37287*</td>
+                                            <td>☠️ Vaporizado*</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p style="margin-top: 10px; color: #e74c3c;"><strong>* Valores teóricos.</strong> Na prática, fontes de bancada limitam a corrente (tipicamente 3-5A), e o cobre/ferro não atingiriam essas temperaturas com V=5V constante.</p>
+                                
+                                <div class="thermal-warning" style="margin-top: 15px;">
+                                    <strong>🔬 Interpretação:</strong> O Ni-Cr é ideal para elementos de aquecimento justamente por sua alta resistividade (limita a corrente) e estabilidade térmica (α baixo). Já o cobre, com baixíssima resistividade, é excelente para conduzir eletricidade sem aquecer - mas com V=5V constante, a corrente seria perigosamente alta!
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 6: Limitações -->
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <span>⚠️ 6. Limitações do Modelo e Considerações Finais</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-body">
+                                <h4>O que nosso modelo NÃO considera:</h4>
+                                <ul>
+                                    <li>❌ Variação de h com ΔT (convecção não-linear)</li>
+                                    <li>❌ Radiação térmica (importante > 300°C)</li>
+                                    <li>❌ Variação da resistividade com T (feedback térmico)</li>
+                                    <li>❌ Limitação de corrente da fonte</li>
+                                    <li>❌ Condução térmica pelas extremidades</li>
+                                    <li>❌ Tempo para atingir o equilíbrio</li>
+                                </ul>
+                                
+                                <h4>Quando o modelo é razoável:</h4>
+                                <ul>
+                                    <li>✅ Ni-Cr com qualquer diâmetro (α muito baixo)</li>
+                                    <li>✅ Temperaturas entre 25°C e 300°C</li>
+                                    <li>✅ Comprimentos entre 0.2m e 1m</li>
+                                </ul>
+                                
+                                <h4>Quando o modelo FALHA:</h4>
+                                <ul>
+                                    <li>❌ Cobre e alumínio com V=5V (correntes irreais)</li>
+                                    <li>❌ Temperaturas acima de 500°C</li>
+                                    <li>❌ Fios muito curtos (domina condução)</li>
+                                </ul>
+                                
+                                <div class="thermal-warning">
+                                    <strong>🎯 Conclusão:</strong> Este termômetro virtual é uma <strong>ferramenta educacional</strong> para ilustrar o Efeito Joule e a relação entre resistência, corrente e aquecimento. Para projetos reais, utilize as fórmulas completas e considere as limitações da fonte de alimentação!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Outras seções (missões, conquistas, etc.) mantidas iguais -->
+            <div class="section" id="section-missions" style="display: none;">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">🎯 Missões de Aprendizagem</div>
+                        <span id="missionProgress">Progresso: 0/4</span>
+                    </div>
+                    <div id="missionsContainer"></div>
+                </div>
+            </div>
+
+            <div class="section" id="section-achievements" style="display: none;">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">🏆 Conquistas Desbloqueadas</div>
+                        <span id="achievementCounter">0/10</span>
+                    </div>
+                    <div class="achievements-grid" id="achievementsContainer"></div>
+                </div>
+            </div>
+
+            <div class="section" id="section-journal" style="display: none;">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">📓 Diário de Bordo do Cientista</div>
+                        <div>
+                            <button class="btn btn-primary" onclick="adicionarEntradaDiario()">➕ Nova Entrada</button>
+                            <button class="btn btn-success" onclick="exportarDiario()">📥 Exportar</button>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div><h4>🤔 Hipótese</h4><textarea id="hypothesis" placeholder="O que você espera que aconteça?"></textarea></div>
+                        <div><h4>👁️ Observações</h4><textarea id="observations" placeholder="Registre suas observações..."></textarea></div>
+                    </div>
+                    <div id="journalEntries" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+
+            <div class="section" id="section-calculator" style="display: none;">
+                <div class="panel">
+                    <div class="panel-title">🧮 Calculadora de Dimensionamento</div>
+                    <div class="grid-2">
+                        <div>
+                            <label>Resistência Desejada (Ω):</label>
+                            <input type="number" id="calcResistance" value="10" step="0.1">
+                            <label>Comprimento (m):</label>
+                            <input type="number" id="calcLength" value="1" step="0.1">
+                            <label>Material:</label>
+                            <select id="calcMaterial">
+                                <option value="nicr">Ni-Cr</option>
+                                <option value="fe">Ferro</option>
+                                <option value="cu">Cobre</option>
+                                <option value="al">Alumínio</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="calcularDiametro()" style="margin-top: 15px;">🔍 Calcular Diâmetro</button>
+                        </div>
+                        <div class="calculator-result" id="calcResult">
+                            <h4>Resultado:</h4>
+                            <div id="calcResultContent"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="section-applications" style="display: none;">
+                <div class="panel">
+                    <div class="panel-title">🌍 Aplicações no Mundo Real</div>
+                    <div class="grid-3" id="applicationsContainer"></div>
+                </div>
+            </div>
+
+            <div class="section" id="section-collaborate" style="display: none;">
+                <div class="panel">
+                    <div class="panel-title">👥 Colaboração</div>
+                    <div class="grid-2">
+                        <div>
+                            <h4>📤 Compartilhar</h4>
+                            <button class="btn btn-primary" onclick="gerarCodigoSessao()">Gerar Código</button>
+                            <div id="sessionCode" style="margin-top: 10px;"></div>
+                            <h4 style="margin-top: 20px;">📥 Carregar</h4>
+                            <input type="text" id="loadSessionCode" placeholder="Cole o código">
+                            <button class="btn btn-success" onclick="carregarSessao()">Carregar</button>
+                        </div>
+                        <div style="text-align: center;"><h4>📱 QR Code</h4><div id="qrcode"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="section-settings" style="display: none;">
+                <div class="panel">
+                    <div class="panel-title">⚙️ Configurações</div>
+                    <div class="grid-2">
+                        <div>
+                            <h4>📥 Exportar</h4>
+                            <button class="btn btn-danger" onclick="exportarPDF()">📄 PDF</button>
+                            <button class="btn btn-success" onclick="exportarCSV()">📊 CSV</button>
+                        </div>
+                        <div>
+                            <h4>🌐 Compartilhar</h4>
+                            <button class="btn btn-primary" onclick="compartilhar('whatsapp')">📱 WhatsApp</button>
+                            <button class="btn btn-info" onclick="compartilhar('twitter')">🐦 Twitter</button>
+                            <button class="btn btn-primary" onclick="copiarLink()">🔗 Copiar Link</button>
+                        </div>
+                        <div>
+                            <h4>✅ Autoavaliação</h4>
+                            <div id="learningChecklist">
+                                <label class="check-item"><input type="checkbox" onchange="verificarChecklist()"> Entendo R ∝ L</label>
+                                <label class="check-item"><input type="checkbox" onchange="verificarChecklist()"> Entendo efeito do diâmetro</label>
+                                <label class="check-item"><input type="checkbox" onchange="verificarChecklist()"> Sei comparar materiais</label>
+                                <label class="check-item"><input type="checkbox" onchange="verificarChecklist()"> Entendo aquecimento (Joule)</label>
+                                <label class="check-item"><input type="checkbox" onchange="verificarChecklist()"> Sei aplicar na prática</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Análise do Especialista -->
+        <div class="panel" style="margin-top: 20px;">
+            <div class="panel-header">
+                <div class="panel-title">🔬 Análise do Especialista</div>
+            </div>
+            <div id="analysisContent"></div>
+        </div>
+    </div>
+
+    <!-- Tutorial Overlay -->
+    <div class="tutorial-overlay" id="tutorialOverlay">
+        <div class="tutorial-tooltip" id="tutorialTooltip">
+            <p id="tutorialMessage"></p>
+            <button class="btn btn-primary" onclick="proximoPassoTutorial()" style="margin-top: 10px;">Próximo →</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
+    </script>
+
+    <script>
+        // ============================================
+        // CONFIGURAÇÕES FÍSICAS
+        // ============================================
+
+        const TENSAO_FONTE = 5.0;
+        const COMPRIMENTOS = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]; // 0 a 1m, passo 0.2m
+        const TEMP_AMBIENTE = 25; // °C
+        const H_CONVECCAO = 15; // W/m²·K (convecção natural)
+
+        const MATERIAIS = {
+            'nicr': {
+                nome: 'Níquel-Cromo',
+                formula: 'Ni-Cr',
+                resistividade: 1.10e-6,
+                alpha: 0.0004,
+                emissividade: 0.8,
+                densidade: 8400,
+                calorEspecifico: 450,
+                cor: '#FF6384',
+                corClara: '#ffd700',
+                corEscura: '#b8860b',
+                descricao: 'Liga resistiva para aquecimento',
+                aplicacoes: ['Chuveiros elétricos', 'Fornos industriais', 'Secadores de cabelo']
+            },
+            'fe': {
+                nome: 'Ferro',
+                formula: 'Fe',
+                resistividade: 9.71e-8,
+                alpha: 0.0050,
+                emissividade: 0.6,
+                densidade: 7874,
+                calorEspecifico: 449,
+                cor: '#4BC0C0',
+                corClara: '#c0c0c0',
+                corEscura: '#808080',
+                descricao: 'Metal ferromagnético comum',
+                aplicacoes: ['Estruturas metálicas', 'Núcleos de transformadores', 'Ferramentas']
+            },
+            'cu': {
+                nome: 'Cobre',
+                formula: 'Cu',
+                resistividade: 1.68e-8,
+                alpha: 0.0039,
+                emissividade: 0.05,
+                densidade: 8960,
+                calorEspecifico: 385,
+                cor: '#FFCE56',
+                corClara: '#ff8c00',
+                corEscura: '#8b4513',
+                descricao: 'Excelente condutor elétrico',
+                aplicacoes: ['Fiação residencial', 'Cabos de rede', 'Componentes eletrônicos']
+            },
+            'al': {
+                nome: 'Alumínio',
+                formula: 'Al',
+                resistividade: 2.65e-8,
+                alpha: 0.0040,
+                emissividade: 0.1,
+                densidade: 2700,
+                calorEspecifico: 900,
+                cor: '#9966FF',
+                corClara: '#e0e0e0',
+                corEscura: '#a0a0a0',
+                descricao: 'Leve e bom condutor',
+                aplicacoes: ['Linhas de transmissão', 'Estruturas aeronáuticas', 'Latas de bebida']
+            }
+        };
+
+        // ============================================
+        // ESTADO GLOBAL
+        // ============================================
+
+        const APP_STATE = {
+            materialAtual: 'nicr',
+            diametroAtual: 1.5,
+            experimentosRealizados: 0,
+            materiaisTestados: new Set(),
+            diametrosTestados: new Set(),
+            conquistasDesbloqueadas: new Set(),
+            missoesCompletadas: new Set(),
+            entradasDiario: [],
+            darkMode: false,
+            tutorialAtivo: false,
+            passoAtual: 0,
+            usouCalculadora: false,
+            colaborou: false,
+            explorouAplicacoes: false,
+            checklistCompleto: false
+        };
+
+        // ============================================
+        // CONQUISTAS E MISSÕES
+        // ============================================
+
+        const CONQUISTAS = {
+            'primeiro_experimento': { icone: '🔬', titulo: 'Primeiro Experimento', descricao: 'Realizou sua primeira simulação',
+                criterio: () => APP_STATE.experimentosRealizados >= 1 },
+            'explorador_diametros': { icone: '📏', titulo: 'Explorador de Diâmetros',
+                descricao: 'Testou 5 diâmetros diferentes', criterio: () => APP_STATE.diametrosTestados.size >= 5 },
+            'comparador_materiais': { icone: '🧪', titulo: 'Comparador de Materiais',
+                descricao: 'Testou todos os 4 materiais', criterio: () => APP_STATE.materiaisTestados.size >= 4 },
+            'mestre_ohm': { icone: '⚡', titulo: 'Mestre da Lei de Ohm', descricao: 'Completou todas as missões',
+                criterio: () => APP_STATE.missoesCompletadas.size >= 4 },
+            'escritor_cientifico': { icone: '📝', titulo: 'Escritor Científico', descricao: 'Registrou 3 entradas no diário',
+                criterio: () => APP_STATE.entradasDiario.length >= 3 },
+            'calculador': { icone: '🧮', titulo: 'Calculador Preciso', descricao: 'Usou a calculadora de dimensionamento',
+                criterio: () => APP_STATE.usouCalculadora },
+            'colaborador': { icone: '👥', titulo: 'Colaborador', descricao: 'Compartilhou ou carregou configuração',
+                criterio: () => APP_STATE.colaborou },
+            'curioso': { icone: '🤔', titulo: 'Curioso', descricao: 'Explorou aplicações reais', criterio: () => APP_STATE
+                    .explorouAplicacoes },
+            'autoavaliador': { icone: '✅', titulo: 'Autoavaliador', descricao: 'Completou checklist',
+            criterio: () => APP_STATE.checklistCompleto },
+            'termologista': { icone: '🌡️', titulo: 'Termologista', descricao: 'Explorou o accordion de análise térmica',
+                criterio: () => APP_STATE.explorouTermica }
+        };
+
+        const MISSOES = [
+            { id: 1, titulo: '🔍 Explorador Iniciante', descricao: 'Observe R, I e T para diferentes comprimentos',
+                objetivos: ['Varie L de 0 a 1m', 'Anote R, I e T para cada L', 'A temperatura aumenta com L?'],
+                dica: 'Com V constante, P = V²/R. Fios mais longos têm maior R, menor P, mas maior área para resfriar!' },
+            { id: 2, titulo: '📏 Investigador de Diâmetros',
+                descricao: 'Compare o aquecimento para diferentes diâmetros',
+                objetivos: ['Use Ni-Cr', 'Compare T para d=0.5mm e d=1.5mm', 'Qual esquenta mais?'],
+                dica: 'Fios finos têm maior R, mas menor área superficial. O equilíbrio térmico depende da relação R/Área.' },
+            { id: 3, titulo: '🧪 Comparador de Materiais', descricao: 'Compare Ni-Cr com Fe (mesmo diâmetro)',
+                objetivos: ['Ajuste d=1.5mm', 'Compare T para Ni-Cr e Fe', 'Qual material aquece mais?'],
+                dica: 'Ni-Cr tem resistividade 11x maior que Fe. Com V constante, P é 11x maior!' },
+            { id: 4, titulo: '🎯 Desafio do Projetista', descricao: 'Encontre condutor que atinja exatamente 100°C',
+                objetivos: ['Alvo: T=100°C com L=1m, V=5V', 'Ajuste material e diâmetro', 'Use o termômetro!'],
+                dica: 'T = 25 + P/(h×A). P = 25/R. A = π×d×1. Resolva: 75 = 25/(R×h×π×d). R = ρ/(π×d²/4).' }
+        ];
+
+        const TUTORIAL = [
+            { elemento: '#materialSelect', mensagem: '👆 Escolha o material. Cada um tem resistividade diferente!' },
+            { elemento: '#diameterSlider', mensagem: '🎚️ Ajuste o diâmetro. Veja a resistência, corrente e temperatura mudarem!' },
+            { elemento: '#crossSectionCanvas',
+                mensagem: '🔵 Seção circular do fio. Diâmetros maiores = mais área para a corrente!' },
+            { elemento: '.thermometer-container',
+                mensagem: '🌡️ Termômetro virtual! Mostra a temperatura estimada do condutor com V=5V constante.' }
+        ];
+
+        // ============================================
+        // CÁLCULOS (TENSÃO CONSTANTE + TÉRMICO)
+        // ============================================
+
+        function calcularArea(diametroMM) {
+            const raioMetros = (diametroMM / 1000) / 2;
+            return Math.PI * raioMetros * raioMetros;
+        }
+
+        function calcularAreaSuperficial(diametroMM, comprimento) {
+            return Math.PI * (diametroMM / 1000) * comprimento;
+        }
+
+        function calcularResistencia(resistividade, comprimento, diametroMM) {
+            if (comprimento === 0) return 0;
+            const area = calcularArea(diametroMM);
+            return (resistividade * comprimento) / area;
+        }
+
+        function calcularCorrente(resistencia) {
+            if (resistencia === 0) return Infinity;
+            return TENSAO_FONTE / resistencia;
+        }
+
+        function calcularPotencia(resistencia) {
+            if (resistencia === 0) return Infinity;
+            return (TENSAO_FONTE * TENSAO_FONTE) / resistencia;
+        }
+
+        function calcularTemperatura(potencia, diametroMM, comprimento) {
+            if (comprimento === 0 || potencia === Infinity || potencia === 0) return TEMP_AMBIENTE;
+            const areaSuperficial = calcularAreaSuperficial(diametroMM, comprimento);
+            if (areaSuperficial === 0) return TEMP_AMBIENTE;
+            const deltaT = potencia / (H_CONVECCAO * areaSuperficial);
+            return TEMP_AMBIENTE + deltaT;
+        }
+
+        function gerarDados(material, diametroMM) {
+            const resistividade = MATERIAIS[material].resistividade;
+            const area = calcularArea(diametroMM);
+
+            return COMPRIMENTOS.map(L => {
+                const R = calcularResistencia(resistividade, L, diametroMM);
+                const I = L === 0 ? Infinity : calcularCorrente(R);
+                const P = L === 0 ? Infinity : calcularPotencia(R);
+                const T = calcularTemperatura(P, diametroMM, L);
+
+                return {
+                    comprimento: L,
+                    resistencia: L === 0 ? 0 : parseFloat(R.toFixed(4)),
+                    corrente: L === 0 ? Infinity : parseFloat(I.toFixed(4)),
+                    potencia: L === 0 ? Infinity : parseFloat(P.toFixed(4)),
+                    temperatura: parseFloat(T.toFixed(1)),
+                    area: area
+                };
+            });
+        }
+
+        // ============================================
+        // TERMÔMETRO VIRTUAL
+        // ============================================
+
+        function atualizarTermometro(dados) {
+            const tempL1m = dados[dados.length - 1].temperatura; // Temperatura para L=1m
+            const potencia = dados[dados.length - 1].potencia;
+            const corrente = dados[dados.length - 1].corrente;
+
+            // Atualizar mercúrio (0-500°C mapeado para 0-100%)
+            const altura = Math.min(100, Math.max(5, ((tempL1m - 25) / (500 - 25)) * 100));
+            document.getElementById('thermometerMercury').style.height = altura + '%';
+
+            // Atualizar valor
+            document.getElementById('tempValue').textContent = tempL1m.toFixed(1) + '°C';
+
+            // Atualizar status
+            const statusEl = document.getElementById('tempStatus');
+            statusEl.className = 'temp-status';
+            if (tempL1m < 60) {
+                statusEl.classList.add('safe');
+                statusEl.textContent = '✅ Seguro ao toque';
+            } else if (tempL1m < 150) {
+                statusEl.classList.add('warm');
+                statusEl.textContent = '⚠️ Cuidado: Quente';
+            } else if (tempL1m < 500) {
+                statusEl.classList.add('hot');
+                statusEl.textContent = '🔥 Muito Quente!';
+            } else {
+                statusEl.classList.add('danger');
+                statusEl.textContent = '☠️ Incandescente!';
+            }
+
+            // Atualizar potência e corrente
+            document.getElementById('powerDissipated').textContent =
+                potencia === Infinity ? '∞' : potencia.toFixed(2) + ' W';
+            document.getElementById('thermCurrent').textContent =
+                corrente === Infinity ? '∞' : corrente.toFixed(4) + ' A';
+        }
+
+        // ============================================
+        // VISUALIZAÇÃO DA SEÇÃO TRANSVERSAL
+        // ============================================
+
+        function desenharSecaoTransversal(diametroMM) {
+            const canvas = document.getElementById('crossSectionCanvas');
+            const ctx = canvas.getContext('2d');
+            const tamanho = canvas.width;
+            const centroX = tamanho / 2;
+            const centroY = tamanho / 2;
+
+            ctx.clearRect(0, 0, tamanho, tamanho);
+
+            const raioMin = 20;
+            const raioMax = 130;
+            const raio = raioMin + (Math.pow(diametroMM / 3.6, 0.7) * (raioMax - raioMin));
+
+            ctx.fillStyle = '#fafafa';
+            ctx.fillRect(0, 0, tamanho, tamanho);
+
+            // Grade circular
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let r = 30; r <= 130; r += 30) {
+                ctx.beginPath();
+                ctx.arc(centroX, centroY, r, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+
+            // Sombra
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetX = 5;
+            ctx.shadowOffsetY = 5;
+
+            // Círculo perfeito
+            ctx.beginPath();
+            ctx.arc(centroX, centroY, raio, 0, 2 * Math.PI);
+
+            const material = MATERIAIS[APP_STATE.materialAtual];
+            const gradiente = ctx.createRadialGradient(
+                centroX - raio * 0.3, centroY - raio * 0.3, raio * 0.05,
+                centroX, centroY, raio
+            );
+            gradiente.addColorStop(0, '#ffffff');
+            gradiente.addColorStop(0.3, material.corClara);
+            gradiente.addColorStop(0.7, material.corEscura);
+            gradiente.addColorStop(1, '#333333');
+
+            ctx.fillStyle = gradiente;
+            ctx.fill();
+            ctx.restore();
+
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Diâmetro
+            ctx.setLineDash([8, 4]);
+            ctx.strokeStyle = '#e74c3c';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(centroX - raio, centroY);
+            ctx.lineTo(centroX + raio, centroY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Setas
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.moveTo(centroX - raio, centroY);
+            ctx.lineTo(centroX - raio + 10, centroY - 5);
+            ctx.lineTo(centroX - raio + 10, centroY + 5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(centroX + raio, centroY);
+            ctx.lineTo(centroX + raio - 10, centroY - 5);
+            ctx.lineTo(centroX + raio - 10, centroY + 5);
+            ctx.closePath();
+            ctx.fill();
+
+            // Centro
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(centroX, centroY, 4, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Textos
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Ø = ${diametroMM.toFixed(2)} mm`, centroX, centroY - raio - 25);
+
+            const area = calcularArea(diametroMM);
+            ctx.font = '13px Arial';
+            ctx.fillStyle = '#666';
+            ctx.fillText(`Área = ${area.toExponential(2)} m²`, centroX, centroY + raio + 35);
+
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Seção Transversal', 10, 20);
+            ctx.fillText(`${material.nome} (${material.formula})`, 10, 50);
+            ctx.fillText(`ρ = ${material.resistividade.toExponential(2)} Ω·m`, 10, 75);
+        }
+
+        // ============================================
+        // GRÁFICO
+        // ============================================
+
+        let chartIndividual = null;
+
+        function atualizarGraficoIndividual(dados) {
+            const ctx = document.getElementById('resistivityChart').getContext('2d');
+            if (chartIndividual) chartIndividual.destroy();
+
+            const material = MATERIAIS[APP_STATE.materialAtual];
+
+            // Filtrar L=0 para o gráfico (evitar divisão por zero)
+            const dadosGrafico = dados.filter(d => d.comprimento > 0);
+            const inclinacao = dadosGrafico.length > 0 ?
+                dadosGrafico[dadosGrafico.length - 1].resistencia / dadosGrafico[dadosGrafico.length - 1].comprimento :
+                0;
+
+            chartIndividual = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: `${material.nome} Ø ${APP_STATE.diametroAtual.toFixed(2)}mm`,
+                        data: dadosGrafico.map(d => ({ x: d.comprimento, y: d.resistencia })),
+                        backgroundColor: material.cor,
+                        borderColor: material.cor,
+                        showLine: true,
+                        tension: 0,
+                        pointRadius: 7,
+                        pointHoverRadius: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `R × L (V = ${TENSAO_FONTE}V) - L: 0 a 1m`,
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    const ponto = ctx.raw;
+                                    const I = ponto.y > 0 ? TENSAO_FONTE / ponto.y : Infinity;
+                                    return [
+                                        `L = ${ponto.x.toFixed(1)} m`,
+                                        `R = ${ponto.y.toFixed(4)} Ω`,
+                                        `I = ${I.toFixed(4)} A`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Comprimento (m)' },
+                            min: 0,
+                            max: 1.1
+                        },
+                        y: {
+                            title: { display: true, text: 'Resistência (Ω)' },
+                            min: 0
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('chartInfo').innerHTML =
+                `📐 Inclinação (R/L) = <strong>${inclinacao.toFixed(4)} Ω/m</strong>`;
+            document.getElementById('currentResistancePerMeter').textContent = `${inclinacao.toFixed(4)} Ω/m`;
+
+            const corrente1m = dados[dados.length - 1].corrente;
+            document.getElementById('currentForOneMeter').textContent =
+                corrente1m === Infinity ? '∞' : `${corrente1m.toFixed(4)} A`;
+        }
+
+        // ============================================
+        // ATUALIZAÇÃO PRINCIPAL
+        // ============================================
+
+        function atualizarExperimento() {
+            const material = APP_STATE.materialAtual;
+            const diametro = APP_STATE.diametroAtual;
+            const dados = gerarDados(material, diametro);
+
+            // Tabela
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            const maxR = Math.max(...dados.filter(d => d.comprimento > 0).map(d => d.resistencia), 0.1);
+
+            dados.forEach(d => {
+                const row = tbody.insertRow();
+                const tempColor = d.temperatura < 60 ? '#27ae60' :
+                    d.temperatura < 150 ? '#f39c12' :
+                    d.temperatura < 500 ? '#e74c3c' : '#8e44ad';
+
+                row.innerHTML = `
+                    <td><strong>${d.comprimento.toFixed(1)}</strong></td>
+                    <td>${d.comprimento === 0 ? '0.0000' : d.resistencia.toFixed(4)}</td>
+                    <td style="color: ${d.corrente > 5 ? '#e74c3c' : '#27ae60'}; font-weight: bold;">
+                        ${d.comprimento === 0 ? '∞' : d.corrente.toFixed(4)}
+                    </td>
+                    <td>${d.comprimento === 0 ? '∞' : d.potencia.toFixed(2)}</td>
+                    <td style="color: ${tempColor}; font-weight: bold;">
+                        ${d.temperatura.toFixed(1)}
+                    </td>
+                `;
+            });
+
+            // Gráfico
+            atualizarGraficoIndividual(dados);
+
+            // Termômetro
+            atualizarTermometro(dados);
+
+            // Seção transversal
+            desenharSecaoTransversal(diametro);
+
+            // Informações
+            document.getElementById('resistivityInfo').innerHTML =
+                `ρ = <strong>${MATERIAIS[material].resistividade.toExponential(2)}</strong> Ω·m<br>
+                 <small>${MATERIAIS[material].descricao}</small>`;
+            document.getElementById('areaInfo').textContent =
+                `Área: ${calcularArea(diametro).toExponential(2)} m²`;
+
+            // Análise
+            atualizarAnalise(dados);
+
+            // Registrar
+            APP_STATE.experimentosRealizados++;
+            APP_STATE.materiaisTestados.add(material);
+            APP_STATE.diametrosTestados.add(diametro);
+
+            verificarConquistas();
+            verificarMissoes();
+            atualizarStats();
+        }
+
+        function atualizarSliderValor() {
+            APP_STATE.diametroAtual = parseFloat(document.getElementById('diameterSlider').value);
+            document.getElementById('diameterValue').textContent = APP_STATE.diametroAtual.toFixed(2);
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (Math.abs(parseFloat(btn.textContent) - APP_STATE.diametroAtual) < 0.01) btn.classList.add(
+                    'active');
+            });
+            atualizarExperimento();
+        }
+
+        function definirDiametro(valor) {
+            document.getElementById('diameterSlider').value = valor;
+            APP_STATE.diametroAtual = valor;
+            document.getElementById('diameterValue').textContent = valor.toFixed(2);
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (Math.abs(parseFloat(btn.textContent) - valor) < 0.01) btn.classList.add('active');
+            });
+            atualizarExperimento();
+        }
+
+        // ============================================
+        // ANÁLISE
+        // ============================================
+
+        function atualizarAnalise(dados) {
+            const material = MATERIAIS[APP_STATE.materialAtual];
+            const area = calcularArea(APP_STATE.diametroAtual);
+            const dados1m = dados[dados.length - 1];
+            const R1m = dados1m.resistencia;
+            const I1m = dados1m.corrente;
+            const P1m = dados1m.potencia;
+            const T1m = dados1m.temperatura;
+
+            const html = `
+                <h3>📋 ${material.nome} - Ø ${APP_STATE.diametroAtual.toFixed(2)} mm (V = ${TENSAO_FONTE}V)</h3>
+                <div class="grid-3" style="margin:15px 0;">
+                    <div style="background:#f0fff0;padding:10px;border-radius:8px;text-align:center;">
+                        <strong>ρ</strong><br>${material.resistividade.toExponential(2)} Ω·m
+                    </div>
+                    <div style="background:#fff8f0;padding:10px;border-radius:8px;text-align:center;">
+                        <strong>Área</strong><br>${area.toExponential(2)} m²
+                    </div>
+                    <div style="background:#f0f0ff;padding:10px;border-radius:8px;text-align:center;">
+                        <strong>R/L</strong><br>${R1m.toFixed(4)} Ω/m
+                    </div>
+                </div>
+                <h4>💡 Para L=1m:</h4>
+                <ul>
+                    <li>R = ${R1m.toFixed(4)} Ω | I = ${I1m === Infinity ? '∞' : I1m.toFixed(4) + ' A'}</li>
+                    <li>P = ${P1m === Infinity ? '∞' : P1m.toFixed(2) + ' W'}</li>
+                    <li>🌡️ T ≈ ${T1m.toFixed(1)}°C (estimada)</li>
+                </ul>
+                <p style="color:#666;">💡 Explore o <strong>accordion de Análise Térmica</strong> abaixo para entender como a temperatura é calculada!</p>
+            `;
+
+            document.getElementById('analysisContent').innerHTML = html;
+        }
+
+        // ============================================
+        // ACCORDION
+        // ============================================
+
+        function toggleAccordion(header) {
+            const body = header.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+
+            // Fechar todos
+            document.querySelectorAll('.accordion-body').forEach(b => b.classList.remove('open'));
+            document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active'));
+
+            // Abrir o clicado
+            if (!isOpen) {
+                body.classList.add('open');
+                header.classList.add('active');
+                APP_STATE.explorouTermica = true;
+                verificarConquistas();
+            }
+        }
+
+        // ============================================
+        // MISSÕES E CONQUISTAS
+        // ============================================
+
+        function verificarMissoes() {
+            const dados = gerarDados(APP_STATE.materialAtual, APP_STATE.diametroAtual);
+
+            if (Math.abs(dados[5].resistencia / (dados[3].resistencia || 1) - 1.67) < 0.5) APP_STATE.missoesCompletadas.add(
+            1);
+            if (APP_STATE.materialAtual === 'nicr' && APP_STATE.diametrosTestados.has(0.5) && APP_STATE.diametrosTestados
+                .has(1.5)) APP_STATE.missoesCompletadas.add(2);
+            if (APP_STATE.diametroAtual === 1.5 && APP_STATE.materiaisTestados.has('nicr') && APP_STATE.materiaisTestados
+                .has('fe')) APP_STATE.missoesCompletadas.add(3);
+            if (Math.abs(dados[5].temperatura - 100) < 10) APP_STATE.missoesCompletadas.add(4);
+
+            atualizarMissoesUI();
+            document.getElementById('missionCount').textContent = `${APP_STATE.missoesCompletadas.size}/4`;
+        }
+
+        function atualizarMissoesUI() {
+            document.getElementById('missionsContainer').innerHTML = MISSOES.map(m => {
+                const completa = APP_STATE.missoesCompletadas.has(m.id);
+                return `<div class="mission-card ${completa ? 'completed' : ''}">
+                    <h4>${completa ? '✅' : '⬜'} ${m.titulo}</h4><p>${m.descricao}</p>
+                    <ul>${m.objetivos.map(o => `<li>${o}</li>`).join('')}</ul>
+                    ${!completa ? `<p><strong>💡 Dica:</strong> ${m.dica}</p>` : '<p><strong>🌟 Missão cumprida!</strong></p>'}
+                </div>`;
+            }).join('');
+            document.getElementById('missionProgress').textContent = `Progresso: ${APP_STATE.missoesCompletadas.size}/4`;
+        }
+
+        function verificarConquistas() {
+            let novas = false;
+            Object.keys(CONQUISTAS).forEach(key => {
+                if (!APP_STATE.conquistasDesbloqueadas.has(key) && CONQUISTAS[key].criterio()) {
+                    APP_STATE.conquistasDesbloqueadas.add(key);
+                    novas = true;
+                }
+            });
+            if (novas) {
+                atualizarConquistasUI();
+                if (APP_STATE.conquistasDesbloqueadas.size >= Object.keys(CONQUISTAS).length)
+                    showToast('🌟 Todas as conquistas desbloqueadas!', 5000);
+            }
+        }
+
+        function atualizarConquistasUI() {
+            document.getElementById('achievementsContainer').innerHTML = Object.entries(CONQUISTAS).map(([key, c]) => {
+                const d = APP_STATE.conquistasDesbloqueadas.has(key);
+                return `<div class="achievement-card ${d ? 'unlocked' : ''}">
+                    <div class="achievement-icon">${d ? c.icone : '🔒'}</div><h4>${c.titulo}</h4><small>${c.descricao}</small>
+                </div>`;
+            }).join('');
+            document.getElementById('achievementCount').textContent = `${APP_STATE.conquistasDesbloqueadas.size}/10`;
+            document.getElementById('achievementCounter').textContent = `${APP_STATE.conquistasDesbloqueadas.size}/10`;
+        }
+
+        // ============================================
+        // DEMAIS FUNCIONALIDADES
+        // ============================================
+
+        function adicionarEntradaDiario() {
+            const hipotese = document.getElementById('hypothesis').value;
+            const observacoes = document.getElementById('observations').value;
+            if (!hipotese && !observacoes) { showToast('⚠️ Escreva algo!'); return; }
+
+            APP_STATE.entradasDiario.push({
+                data: new Date().toLocaleString(),
+                material: MATERIAIS[APP_STATE.materialAtual].nome,
+                diametro: APP_STATE.diametroAtual,
+                hipotese,
+                observacoes,
+                dados: gerarDados(APP_STATE.materialAtual, APP_STATE.diametroAtual)
+            });
+            document.getElementById('hypothesis').value = '';
+            document.getElementById('observations').value = '';
+            atualizarDiarioUI();
+            verificarConquistas();
+            showToast('✅ Entrada registrada!');
+        }
+
+        function atualizarDiarioUI() {
+            document.getElementById('journalEntries').innerHTML = APP_STATE.entradasDiario.map((e, i) => `
+                <div class="journal-entry">
+                    <strong>📅 ${e.data}</strong> | ${e.material} Ø ${e.diametro.toFixed(2)}mm | V=5V<br>
+                    <strong>Hipótese:</strong> ${e.hipotese || 'Nenhuma'}<br>
+                    <strong>Observações:</strong> ${e.observacoes || 'Nenhuma'}<br>
+                    <small>R(1m)=${e.dados[5].resistencia.toFixed(4)}Ω | T(1m)=${e.dados[5].temperatura.toFixed(1)}°C</small>
+                </div>`).join('');
+        }
+
+        function exportarDiario() {
+            if (!APP_STATE.entradasDiario.length) { showToast('⚠️ Nenhuma entrada!'); return; }
+            let texto = 'DIÁRIO DE BORDO - LAB VIRTUAL DE RESISTIVIDADE\n' + '='.repeat(50) + '\n\nTensão: 5V constante\n\n';
+            APP_STATE.entradasDiario.forEach((e, i) => {
+                texto +=
+                    `Entrada ${i+1} - ${e.data}\nMaterial: ${e.material} | Ø ${e.diametro.toFixed(2)}mm\nHipótese: ${e.hipotese || 'Nenhuma'}\nObservações: ${e.observacoes || 'Nenhuma'}\nR(1m)=${e.dados[5].resistencia.toFixed(4)}Ω | T(1m)=${e.dados[5].temperatura.toFixed(1)}°C\n${'-'.repeat(30)}\n\n`;
+            });
+            const blob = new Blob([texto], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'diario_bordo.txt';
+            a.click();
+            showToast('✅ Exportado!');
+        }
+
+        function calcularDiametro() {
+            const R = parseFloat(document.getElementById('calcResistance').value);
+            const L = parseFloat(document.getElementById('calcLength').value);
+            const mk = document.getElementById('calcMaterial').value;
+            const rho = MATERIAIS[mk].resistividade;
+            const area = (rho * L) / R;
+            const d = 2 * Math.sqrt(area / Math.PI) * 1000;
+            document.getElementById('calcResultContent').innerHTML = `
+                <p><strong>R=${R}Ω, L=${L}m, ${MATERIAIS[mk].nome}:</strong></p>
+                <p>Diâmetro: <span style="font-size:20px;">${d.toFixed(2)} mm</span></p>
+                <p>Corrente (V=5V): ${(5/R).toFixed(4)} A</p>
+                <p>🌡️ T estimada: ${(25 + (25/R)/(H_CONVECCAO*Math.PI*(d/1000)*L)).toFixed(1)}°C</p>
+            `;
+            document.getElementById('calcResult').classList.add('show');
+            APP_STATE.usouCalculadora = true;
+            verificarConquistas();
+        }
+
+        function atualizarAplicacoes() {
+            document.getElementById('applicationsContainer').innerHTML = Object.entries(MATERIAIS).map(([k, m]) => `
+                <div class="control-card" style="cursor:pointer;" onclick="
+                    document.getElementById('materialSelect').value='${k}';
+                    APP_STATE.materialAtual='${k}';
+                    atualizarExperimento();
+                    navegarPara('experiment');
+                    APP_STATE.explorouAplicacoes=true;
+                    verificarConquistas();
+                ">
+                    <h4 style="color:${m.cor};">🔬 ${m.nome}</h4><p>${m.descricao}</p>
+                    <ul>${m.aplicacoes.map(a => `<li>${a}</li>`).join('')}</ul>
+                    <small style="color:${m.cor};">Clique para testar →</small>
+                </div>`).join('');
+        }
+
+        function gerarCodigoSessao() {
+            const config = { m: APP_STATE.materialAtual, d: APP_STATE.diametroAtual, t: Date.now() };
+            const codigo = btoa(JSON.stringify(config));
+            document.getElementById('sessionCode').innerHTML =
+                `<code>${codigo}</code> <button class="btn btn-info" onclick="navigator.clipboard.writeText('${codigo}');showToast('✅ Copiado!');">📋</button>`;
+            document.getElementById('qrcode').innerHTML = '';
+            new QRCode(document.getElementById('qrcode'), {
+                text: `${window.location.origin}${window.location.pathname}?config=${codigo}`,
+                width: 150,
+                height: 150
+            });
+            APP_STATE.colaborou = true;
+            verificarConquistas();
+            showToast('✅ Código gerado!');
+        }
+
+        function carregarSessao() {
+            const codigo = document.getElementById('loadSessionCode').value;
+            if (!codigo) { showToast('⚠️ Cole um código!'); return; }
+            try {
+                const config = JSON.parse(atob(codigo));
+                document.getElementById('materialSelect').value = config.m;
+                APP_STATE.materialAtual = config.m;
+                definirDiametro(config.d);
+                APP_STATE.colaborou = true;
+                verificarConquistas();
+                showToast('✅ Carregado!');
+            } catch (e) { showToast('❌ Inválido!'); }
+        }
+
+        function verificarChecklist() {
+            if (Array.from(document.querySelectorAll('#learningChecklist input')).every(cb => cb.checked)) {
+                APP_STATE.checklistCompleto = true;
+                verificarConquistas();
+                showToast('🌟 Checklist completo!');
+            }
+        }
+
+        function iniciarTutorial() {
+            APP_STATE.tutorialAtivo = true;
+            APP_STATE.passoAtual = 0;
+            document.getElementById('tutorialOverlay').style.display = 'block';
+            mostrarPassoTutorial();
+            navegarPara('experiment');
+        }
+
+        function mostrarPassoTutorial() {
+            if (APP_STATE.passoAtual >= TUTORIAL.length) { finalizarTutorial(); return; }
+            const passo = TUTORIAL[APP_STATE.passoAtual];
+            const el = document.querySelector(passo.elemento);
+            if (el) {
+                const rect = el.getBoundingClientRect();
+                const tt = document.getElementById('tutorialTooltip');
+                tt.style.left = Math.min(rect.left + window.scrollX, window.innerWidth - 320) + 'px';
+                tt.style.top = Math.max(rect.bottom + window.scrollY + 10, 100) + 'px';
+                document.getElementById('tutorialMessage').textContent = passo.mensagem;
+            }
+        }
+
+        function proximoPassoTutorial() { APP_STATE.passoAtual++;
+            mostrarPassoTutorial(); }
+
+        function finalizarTutorial() {
+            APP_STATE.tutorialAtivo = false;
+            document.getElementById('tutorialOverlay').style.display = 'none';
+            showToast('✅ Tutorial concluído!');
+        }
+
+        function navegarPara(secao) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.nav-btn[data-section="${secao}"]`)?.classList.add('active');
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            const el = document.getElementById(`section-${secao}`);
+            if (el) el.style.display = 'block';
+        }
+
+        document.querySelectorAll('.nav-btn').forEach(b => b.addEventListener('click', function() { navegarPara(this
+                .dataset.section); }));
+
+        function toggleDarkMode() {
+            APP_STATE.darkMode = !APP_STATE.darkMode;
+            document.body.style.background = APP_STATE.darkMode ?
+                'linear-gradient(135deg, #1a1a2e, #16213e)' : 'linear-gradient(135deg, #667eea, #764ba2)';
+            showToast(APP_STATE.darkMode ? '🌙 Escuro' : '☀️ Claro');
+        }
+
+        function atualizarStats() {
+            document.getElementById('totalExperiments').textContent = APP_STATE.experimentosRealizados;
+            document.getElementById('materialsTested').textContent = APP_STATE.materiaisTestados.size;
+            document.getElementById('diametersTested').textContent = APP_STATE.diametrosTestados.size;
+            document.getElementById('experimentCount').textContent = APP_STATE.experimentosRealizados;
+        }
+
+        function showToast(m, d = 3000) {
+            const t = document.getElementById('toast');
+            t.textContent = m;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), d);
+        }
+
+        async function exportarPDF() {
+            showToast('Gerando PDF...');
+            try {
+                await html2pdf().set({ margin: 10, filename: 'relatorio.pdf', image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(
+                    document.getElementById('appContainer')).save();
+                showToast('✅ PDF exportado!');
+            } catch (e) { showToast('❌ Erro'); }
+        }
+
+        function exportarCSV() {
+            const dados = gerarDados(APP_STATE.materialAtual, APP_STATE.diametroAtual);
+            let csv = 'L (m),R (Ω),I (A),P (W),T (°C)\n';
+            dados.forEach(d => csv +=
+                `${d.comprimento},${d.resistencia},${d.corrente === Infinity ? '∞' : d.corrente},${d.potencia === Infinity ? '∞' : d.potencia},${d.temperatura}\n`
+                );
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'dados.csv';
+            a.click();
+            showToast('✅ CSV exportado!');
+        }
+
+        function compartilhar(rede) {
+            const u = encodeURIComponent(window.location.href);
+            const t = encodeURIComponent('Lab Virtual de Resistividade (V=5V, com termômetro!)');
+            const urls = { 'whatsapp': `https://wa.me/?text=${t}%20${u}`, 'twitter': `https://twitter.com/intent/tweet?text=${t}&url=${u}` };
+            if (urls[rede]) window.open(urls[rede], '_blank', 'width=600,height=400');
+        }
+
+        async function copiarLink() { try { await navigator.clipboard.writeText(window.location.href);
+                showToast('✅ Copiado!'); } catch (e) { showToast('❌ Erro'); } }
+
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
+
+        function inicializar() {
+            document.getElementById('materialSelect').value = APP_STATE.materialAtual;
+            document.getElementById('diameterSlider').value = APP_STATE.diametroAtual;
+            document.getElementById('diameterValue').textContent = APP_STATE.diametroAtual.toFixed(2);
+            atualizarExperimento();
+            atualizarMissoesUI();
+            atualizarConquistasUI();
+            atualizarDiarioUI();
+            atualizarAplicacoes();
+            atualizarStats();
+            const cp = new URLSearchParams(window.location.search).get('config');
+            if (cp) { try { const c = JSON.parse(atob(cp));
+                    document.getElementById('materialSelect').value = c.m;
+                    APP_STATE.materialAtual = c.m;
+                    definirDiametro(c.d);
+                    showToast('✅ Carregado do link!'); } catch (e) {} }
+            console.log('🚀 Lab Virtual inicializado! V=5V, L: 0-1m, com termômetro e análise térmica.');
+        }
+
+        document.addEventListener('DOMContentLoaded', inicializar);
+        document.getElementById('tutorialOverlay').addEventListener('click', function(e) { if (e.target === this && APP_STATE
+                .tutorialAtivo) finalizarTutorial(); });
+    </script>
+</body>
+</html>
