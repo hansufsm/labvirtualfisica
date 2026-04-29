@@ -7,6 +7,15 @@ const COMPRIMENTOS = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0];
 const T0 = 25;   // temperatura ambiente (°C)
 const H  = 15;   // coef. convecção (W/m²·K)
 
+/* Limites de alerta */
+const ALERT_CURRENT_WARNING  = 3;   // A – corrente elevada
+const ALERT_CURRENT_DANGER   = 5;   // A – corrente perigosa
+const INFINITE_CURRENT_PROXY = 999; // valor proxy para "corrente infinita" em alertas
+
+/* Verificação de proporcionalidade R×L: R(1m)/R(0.6m) ≈ 1.67 */
+const EXPECTED_R_RATIO = 1.67;
+const R_RATIO_TOLERANCE = 0.5;
+
 const MATERIAIS = {
   nicr: {
     nome: 'Níquel-Cromo', formula: 'Ni-Cr',
@@ -177,7 +186,7 @@ function _atualizarTermometro(T) {
 
 /* ---- Alertas ---- */
 function _atualizarAlertas(d1m) {
-  const I = d1m.corrente === Infinity ? 999 : d1m.corrente;
+  const I = d1m.corrente === Infinity ? INFINITE_CURRENT_PROXY : d1m.corrente;
   const alertT = document.getElementById('alertTemperature');
   const alertC = document.getElementById('alertCurrent');
   _stopAlarm();
@@ -196,12 +205,12 @@ function _atualizarAlertas(d1m) {
     _startAlarm(440, 2000);
   }
 
-  if (I > 5) {
+  if (I > ALERT_CURRENT_DANGER) {
     alertC.textContent = `⚡ CORRENTE PERIGOSA (${I.toFixed(1)}A)! Risco de choque e incêndio!`;
     alertC.classList.add('visible');
     document.body.classList.add('danger-mode');
     _startAlarm(220, 300);
-  } else if (I > 3) {
+  } else if (I > ALERT_CURRENT_WARNING) {
     alertC.textContent = `⚡ Corrente elevada (${I.toFixed(1)}A). Atenção!`;
     alertC.classList.add('visible');
   }
@@ -601,7 +610,8 @@ function _animarAquecimento() {
 /* ---- Missões ---- */
 function _verificarMissoes() {
   const d = gerarDados(APP.material, APP.diametro, APP.voltagem);
-  if (d[5].resistencia > 0 && Math.abs(d[5].resistencia / (d[3].resistencia || 1) - 1.67) < 0.5)
+  /* Missão 1: verificar proporcionalidade R∝L → R(1m)/R(0.6m) ≈ 1.67 */
+  if (d[5].resistencia > 0 && Math.abs(d[5].resistencia / (d[3].resistencia || 1) - EXPECTED_R_RATIO) < R_RATIO_TOLERANCE)
     APP.missoesCompletadas.add(1);
   if (APP.material === 'nicr' && APP.diametrosTestados.has(0.5) && APP.diametrosTestados.has(1.5))
     APP.missoesCompletadas.add(2);

@@ -58,7 +58,13 @@ body {
    DANGER MODE
    ============================================ */
 body.danger-mode {
-  animation: dangerPulse 0.8s infinite;
+  background-color: #e74c3c;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body.danger-mode {
+    animation: dangerPulse 0.8s infinite;
+  }
 }
 
 @keyframes dangerPulse {

@@ -177,10 +177,14 @@ const Charts = (() => {
     const legend = document.getElementById('comparisonLegend');
     if (legend) {
       legend.innerHTML = Object.keys(REFS).map(k => {
-        const inc = refs[k][5].resistencia / 0.9999;
+        /* Use actual L value from last data point (L=1.0m) to compute slope */
+        const lastPoint = refs[k][refs[k].length - 1];
+        const slope = lastPoint.comprimento > 0
+          ? lastPoint.resistencia / lastPoint.comprimento
+          : 0;
         return `<div class="legend-item">
           <div class="legend-color" style="background:${REFS[k].cor};"></div>
-          ${REFS[k].nome}: ${inc.toFixed(4)} Ω/m
+          ${REFS[k].nome}: ${slope.toFixed(4)} Ω/m
         </div>`;
       }).join('');
     }
