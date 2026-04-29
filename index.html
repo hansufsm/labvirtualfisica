@@ -2,15 +2,530 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#667eea" />
+  <meta name="description" content="Simulação interativa de Resistividade, Lei de Ohm e Efeito Joule" />
   <title>Lab Virtual de Resistividade</title>
-  <meta http-equiv="refresh" content="0; url=./deepseek_html_20260428_036752-V9.html" />
-  <link rel="canonical" href="./deepseek_html_20260428_036752-V9.html" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="assets/css/app.css" />
+  <!-- Chart.js (add integrity="sha384-..." for production SRI) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+    crossorigin="anonymous"></script>
+  <!-- html2pdf (add integrity="sha384-..." for production SRI) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+    crossorigin="anonymous"></script>
 </head>
 <body>
-  <p>
-    Redirecionando… Se não redirecionar automaticamente, abra:
-    <a href="./deepseek_html_20260428_036752-V9.html">deepseek_html_20260428_036752-V9.html</a>
-  </p>
+
+  <!-- ========================================
+       APP HEADER
+       ======================================== -->
+  <header class="app-header">
+    <div class="app-title">
+      <span class="app-icon" aria-hidden="true">🧪</span>
+      <div>
+        <h1>Lab Virtual</h1>
+        <p class="subtitle">Resistividade &amp; Lei de Ohm</p>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-badge" title="Conquistas">🏆 <span id="achievementCount">0/8</span></div>
+      <div class="stat-badge" title="Missões">✅ <span id="missionCount">0/4</span></div>
+      <span class="stat-badge" title="Experimentos">🧪 <span id="experimentCount">0</span></span>
+      <button class="icon-btn" onclick="UI.toggleDarkMode()" aria-label="Alternar modo escuro">🌓</button>
+    </div>
+  </header>
+
+  <!-- Desktop navigation tabs (hidden on mobile) -->
+  <nav class="desktop-nav" role="navigation" aria-label="Seções do app">
+    <button class="desktop-nav-btn active" data-section="experiment" onclick="UI.navigateTo('experiment')">🔬 Experimento</button>
+    <button class="desktop-nav-btn" data-section="comparison"  onclick="UI.navigateTo('comparison')">📊 Comparar</button>
+    <button class="desktop-nav-btn" data-section="missions"    onclick="UI.navigateTo('missions')">🎯 Missões</button>
+    <button class="desktop-nav-btn" data-section="journal"     onclick="UI.navigateTo('journal')">📓 Diário</button>
+    <button class="desktop-nav-btn" data-section="achievements" onclick="UI.navigateTo('achievements')">🏆 Conquistas</button>
+    <button class="desktop-nav-btn" data-section="calculator"  onclick="UI.navigateTo('calculator')">🧮 Calculadora</button>
+    <button class="desktop-nav-btn" data-section="applications" onclick="UI.navigateTo('applications')">🌍 Aplicações</button>
+    <button class="desktop-nav-btn" data-section="settings"    onclick="UI.navigateTo('settings')">⚙️ Configs</button>
+  </nav>
+
+  <!-- ========================================
+       MAIN CONTENT
+       ======================================== -->
+  <main class="main-content" id="mainContent">
+
+    <!-- ======== SEÇÃO: EXPERIMENTO ======== -->
+    <section class="tab-section" id="section-experiment" role="tabpanel" aria-label="Experimento">
+
+      <!-- Controles -->
+      <div class="section-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">🎛️ Controles</h2>
+          <button class="btn btn-sm btn-outline"
+            onclick="UI.showToast('📖 Varie material, diâmetro e tensão. Depois inicie o aquecimento!')"
+            aria-label="Ajuda rápida">📖 Ajuda</button>
+        </div>
+
+        <!-- Material -->
+        <div class="control-card">
+          <label class="control-label" for="materialSelect">🔬 Material</label>
+          <select id="materialSelect" class="select-input" onchange="Sim.onMaterialChange()"
+            aria-label="Selecionar material">
+            <option value="nicr">Níquel-Cromo (Ni-Cr)</option>
+            <option value="fe">Ferro (Fe)</option>
+            <option value="cu">Cobre (Cu)</option>
+            <option value="al">Alumínio (Al)</option>
+          </select>
+          <p id="resistivityInfo" class="info-text"></p>
+        </div>
+
+        <!-- Diâmetro -->
+        <div class="control-card">
+          <label class="control-label" for="diameterSlider">
+            📏 Diâmetro do Fio &nbsp;
+            <span class="slider-value-inline" id="diameterValue">1.00</span> mm
+          </label>
+          <div class="slider-row">
+            <button class="step-btn" onclick="Sim.stepDiameter(-0.1)" aria-label="Diminuir diâmetro">−</button>
+            <input type="range" id="diameterSlider" class="range-input"
+              min="0.36" max="3.6" step="0.01" value="1.0"
+              oninput="Sim.onDiameterInput()" aria-label="Diâmetro do fio em milímetros" />
+            <button class="step-btn" onclick="Sim.stepDiameter(0.1)" aria-label="Aumentar diâmetro">+</button>
+          </div>
+          <div class="chips-row" role="group" aria-label="Presets de diâmetro">
+            <button class="chip" onclick="Sim.setDiameter(0.36)">0.36</button>
+            <button class="chip" onclick="Sim.setDiameter(0.72)">0.72</button>
+            <button class="chip active" onclick="Sim.setDiameter(1.00)">1.00</button>
+            <button class="chip" onclick="Sim.setDiameter(1.50)">1.50</button>
+            <button class="chip" onclick="Sim.setDiameter(2.00)">2.00</button>
+            <button class="chip" onclick="Sim.setDiameter(3.00)">3.00</button>
+            <button class="chip" onclick="Sim.setDiameter(3.60)">3.60</button>
+          </div>
+        </div>
+
+        <!-- Tensão -->
+        <div class="control-card control-card--voltage">
+          <label class="control-label" for="voltageSlider">
+            ⚡ Tensão da Fonte &nbsp;
+            <span class="slider-value-inline" id="voltageValue">5.0</span> V
+          </label>
+          <div class="slider-row">
+            <button class="step-btn" onclick="Sim.stepVoltage(-0.5)" aria-label="Diminuir tensão">−</button>
+            <input type="range" id="voltageSlider" class="range-input range-input--voltage"
+              min="0.5" max="12" step="0.1" value="5.0"
+              oninput="Sim.onVoltageInput()" aria-label="Tensão da fonte em volts" />
+            <button class="step-btn" onclick="Sim.stepVoltage(0.5)" aria-label="Aumentar tensão">+</button>
+          </div>
+          <div class="chips-row" role="group" aria-label="Presets de tensão">
+            <button class="chip chip--voltage" onclick="Sim.setVoltage(1.5)">1.5V</button>
+            <button class="chip chip--voltage" onclick="Sim.setVoltage(3.3)">3.3V</button>
+            <button class="chip chip--voltage active" onclick="Sim.setVoltage(5.0)">5V</button>
+            <button class="chip chip--voltage" onclick="Sim.setVoltage(9.0)">9V</button>
+            <button class="chip chip--voltage" onclick="Sim.setVoltage(12.0)">12V</button>
+          </div>
+        </div>
+
+        <!-- ρ constante -->
+        <div class="rho-card" id="rhoCard">
+          🔬 <strong>ρ CONSTANTE:</strong> <span id="rhoDisplay">ρ = 1.10×10⁻⁶ Ω·m</span><br>
+          <small><em>A resistividade depende <u>apenas</u> do material, não das dimensões!</em></small>
+        </div>
+      </div><!-- /controles -->
+
+      <!-- Alertas -->
+      <div id="alertTemperature" class="alert-box alert--warning" role="alert" aria-live="polite"></div>
+      <div id="alertCurrent"     class="alert-box alert--danger"  role="alert" aria-live="assertive"></div>
+
+      <!-- Métricas (cards) -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Tensão (V)</div>
+          <div class="metric-value metric-value--voltage" id="infoVoltage">5.0 V</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Resistência L=1m</div>
+          <div class="metric-value metric-value--primary" id="infoResistance">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Corrente L=1m</div>
+          <div class="metric-value" id="infoCurrentBig">—</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Resistividade ρ</div>
+          <div class="metric-value metric-value--success" id="infoRho">—</div>
+        </div>
+      </div>
+
+      <!-- Termômetro -->
+      <div class="thermo-panel">
+        <div class="thermo-bar-wrap">
+          <div class="thermo-bar" role="img" aria-label="Termômetro">
+            <div class="thermo-fill" id="thermometerFill" style="height:3%;"></div>
+          </div>
+          <div class="thermo-scale" aria-hidden="true">
+            <span>400°</span><span>300°</span><span>200°</span><span>100°</span><span>50°</span><span>25°</span>
+          </div>
+        </div>
+        <div class="thermo-info">
+          <div class="thermo-label">TEMPERATURA DO CONDUTOR</div>
+          <div class="thermo-temp" id="tempDisplay">25.0°C</div>
+          <div class="thermo-status" id="tempLabel">✅ Seguro ao toque</div>
+          <div class="thermo-time"   id="tempTime">Tempo simulado: 0s</div>
+          <div class="thermo-extra">I = <span id="infoCurrent">—</span> A | P = <span id="infoPower">—</span> W</div>
+          <div class="thermo-tau">τ = <span id="tauValue">—</span> s | T<sub>eq</sub> = <span id="teqValue">—</span>°C</div>
+        </div>
+      </div>
+
+      <!-- Seção transversal -->
+      <div class="section-panel">
+        <h2 class="panel-title">⭕ Seção Transversal</h2>
+        <div class="canvas-wrap canvas-wrap--sm">
+          <canvas id="crossSectionCanvas" width="260" height="260"
+            aria-label="Seção transversal do fio"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráfico R × L -->
+      <div class="section-panel">
+        <h2 class="panel-title">📈 Resistência × Comprimento</h2>
+        <div class="canvas-wrap">
+          <canvas id="chartRL" aria-label="Gráfico de Resistência por Comprimento"></canvas>
+        </div>
+        <p id="chartRLInfo" class="chart-info"></p>
+      </div>
+
+      <!-- Aquecimento -->
+      <div class="section-panel">
+        <h2 class="panel-title">🌡️ Aquecimento (T × tempo)</h2>
+        <div class="heating-controls">
+          <button class="btn btn-primary" onclick="Sim.iniciarAquecimento()">▶ Iniciar</button>
+          <button class="btn btn-danger"  onclick="Sim.resetarAquecimento()">↺ Resetar</button>
+        </div>
+        <p id="aquecimentoInfo" class="info-text">Clique em "Iniciar" para ver a evolução da temperatura.</p>
+        <div class="canvas-wrap" style="margin-top:10px;">
+          <canvas id="chartTt" aria-label="Gráfico de Temperatura por Tempo"></canvas>
+        </div>
+      </div>
+
+      <!-- Análise -->
+      <div class="section-panel">
+        <h2 class="panel-title">🔬 Análise do Especialista</h2>
+        <div id="analysisContent"></div>
+      </div>
+
+      <!-- Dados experimentais (accordion) -->
+      <div class="accordion-wrap">
+        <button class="accordion-header" onclick="UI.toggleAccordion(this)" aria-expanded="false">
+          <span>📊 Dados Experimentais</span>
+          <span class="accordion-icon" aria-hidden="true">▼</span>
+        </button>
+        <div class="accordion-body">
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>L (m)</th><th>R (Ω)</th><th>I (A)</th><th>V (V)</th></tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leitura Extra (accordion) -->
+      <div class="accordion-wrap">
+        <button class="accordion-header" onclick="UI.toggleAccordion(this)" aria-expanded="false">
+          <span>📚 Leitura Extra: Análise Térmica</span>
+          <span class="accordion-icon" aria-hidden="true">▼</span>
+        </button>
+        <div class="accordion-body">
+          <div class="accordion-item-inner">
+            <button class="sub-accordion-header" onclick="UI.toggleAccordion(this)" aria-expanded="false">
+              <span>🔥 1. Efeito Joule: P = R×I²</span>
+              <span class="accordion-icon" aria-hidden="true">▼</span>
+            </button>
+            <div class="accordion-body">
+              <p>Potência dissipada: <strong>P = V×I = V²/R = R×I²</strong></p>
+              <div class="formula-box">Ex: Ni-Cr Ø1.0mm, V=5V → R≈1.40Ω | I≈3.57A | P≈17.85W</div>
+            </div>
+          </div>
+          <div class="accordion-item-inner">
+            <button class="sub-accordion-header" onclick="UI.toggleAccordion(this)" aria-expanded="false">
+              <span>🌡️ 2. Aquecimento: T(t) = T₀ + ΔT×(1−e⁻ᵗ/τ)</span>
+              <span class="accordion-icon" aria-hidden="true">▼</span>
+            </button>
+            <div class="accordion-body">
+              <div class="formula-box">ΔT_eq = P / (h × A_sup)
+τ = (m × c) / (h × A_sup)
+h = 15 W/m²·K  |  c = calor específico do material</div>
+            </div>
+          </div>
+          <div class="accordion-item-inner">
+            <button class="sub-accordion-header" onclick="UI.toggleAccordion(this)" aria-expanded="false">
+              <span>⚠️ 3. Segurança e Limitações</span>
+              <span class="accordion-icon" aria-hidden="true">▼</span>
+            </button>
+            <div class="accordion-body">
+              <p>T &gt; 45°C: desconfortável | T &gt; 60°C: risco de queimadura | I &gt; 5A: risco de choque/incêndio</p>
+              <div class="danger-box">⚠️ Sempre use proteção ao manusear condutores aquecidos em laboratório real!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section><!-- /experimento -->
+
+    <!-- ======== SEÇÃO: COMPARAÇÃO ======== -->
+    <section class="tab-section" id="section-comparison" role="tabpanel" aria-label="Comparação" hidden>
+      <div class="section-panel">
+        <h2 class="panel-title">📊 Comparação (V = <span id="compVoltage">5.0</span> V)</h2>
+        <div class="canvas-wrap canvas-wrap--lg">
+          <canvas id="comparisonChart" aria-label="Gráfico comparativo de materiais"></canvas>
+        </div>
+        <div class="legend" id="comparisonLegend"></div>
+      </div>
+      <div class="accordion-wrap">
+        <button class="accordion-header" onclick="UI.toggleAccordion(this)" aria-expanded="false">
+          <span>📋 Tabela Comparativa — Resistências (Ω)</span>
+          <span class="accordion-icon" aria-hidden="true">▼</span>
+        </button>
+        <div class="accordion-body">
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>L(m)</th>
+                  <th>Ni-Cr 0.5</th><th>Ni-Cr 1.0</th><th>Ni-Cr 1.5</th>
+                  <th>Fe 1.5</th><th>Atual</th>
+                </tr>
+              </thead>
+              <tbody id="comparisonTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== SEÇÃO: MISSÕES ======== -->
+    <section class="tab-section" id="section-missions" role="tabpanel" aria-label="Missões" hidden>
+      <div class="section-panel">
+        <h2 class="panel-title">🎯 Missões</h2>
+        <div id="missionsContainer"></div>
+      </div>
+    </section>
+
+    <!-- ======== SEÇÃO: DIÁRIO ======== -->
+    <section class="tab-section" id="section-journal" role="tabpanel" aria-label="Diário de Bordo" hidden>
+      <div class="section-panel">
+        <h2 class="panel-title">📓 Diário de Bordo</h2>
+        <div class="form-group">
+          <label for="hypothesis">Hipótese</label>
+          <textarea id="hypothesis" class="textarea-input" rows="3"
+            placeholder="Escreva sua hipótese aqui…"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="observations">Observações</label>
+          <textarea id="observations" class="textarea-input" rows="3"
+            placeholder="Escreva suas observações aqui…"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="Sim.adicionarEntradaDiario()">➕ Registrar</button>
+          <button class="btn btn-success" onclick="Sim.exportarDiario()">📥 Exportar TXT</button>
+        </div>
+        <div id="journalEntries" style="margin-top:14px;"></div>
+      </div>
+    </section>
+
+    <!-- ======== SEÇÃO: CONQUISTAS ======== -->
+    <section class="tab-section" id="section-achievements" role="tabpanel" aria-label="Conquistas" hidden>
+      <div class="section-panel">
+        <h2 class="panel-title">🏆 Conquistas</h2>
+        <div class="achievements-grid" id="achievementsContainer"></div>
+      </div>
+    </section>
+
+    <!-- ======== SEÇÃO: CALCULADORA ======== -->
+    <section class="tab-section" id="section-calculator" role="tabpanel" aria-label="Calculadora" hidden>
+      <div class="section-panel">
+        <h2 class="panel-title">🧮 Calculadora de Dimensionamento</h2>
+        <p class="info-text" style="margin-bottom:12px;">Calcule o diâmetro necessário para uma resistência desejada.</p>
+        <div class="form-group">
+          <label for="calcResistance">Resistência desejada (Ω)</label>
+          <input type="number" id="calcResistance" class="text-input" value="10" min="0.01" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label for="calcLength">Comprimento do fio (m)</label>
+          <input type="number" id="calcLength" class="text-input" value="1" min="0.01" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label for="calcMaterial">Material</label>
+          <select id="calcMaterial" class="select-input">
+            <option value="nicr">Níquel-Cromo</option>
+            <option value="fe">Ferro</option>
+            <option value="cu">Cobre</option>
+            <option value="al">Alumínio</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="Sim.calcularDiametro()">🔍 Calcular Diâmetro</button>
+        <div id="calcResult" class="result-card" style="display:none; margin-top:14px;">
+          <div id="calcResultContent"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== SEÇÃO: APLICAÇÕES ======== -->
+    <section class="tab-section" id="section-applications" role="tabpanel" aria-label="Aplicações" hidden>
+      <div class="section-panel">
+        <h2 class="panel-title">🌍 Aplicações Práticas</h2>
+        <p class="info-text" style="margin-bottom:12px;">Toque em um material para testá-lo no experimento.</p>
+        <div id="applicationsContainer"></div>
+      </div>
+    </section>
+
+    <!-- ======== SEÇÃO: CONFIGURAÇÕES ======== -->
+    <section class="tab-section" id="section-settings" role="tabpanel" aria-label="Configurações" hidden>
+      <div class="section-panel">
+        <h2 class="panel-title">⚙️ Configurações</h2>
+        <div class="settings-item">
+          <span>Modo Escuro</span>
+          <button class="btn btn-outline" onclick="UI.toggleDarkMode()">🌓 Alternar</button>
+        </div>
+        <div class="settings-item">
+          <span>Exportar Relatório PDF</span>
+          <button class="btn btn-danger btn-sm" onclick="Sim.exportarPDF()">📄 Gerar PDF</button>
+        </div>
+        <div class="settings-item">
+          <span>Exportar Dados CSV</span>
+          <button class="btn btn-success btn-sm" onclick="Sim.exportarCSV()">📊 Baixar CSV</button>
+        </div>
+        <div class="settings-item">
+          <span>Versão</span>
+          <span class="badge">v10 Mobile</span>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- /main-content -->
+
+  <!-- ========================================
+       FAB — Ações
+       ======================================== -->
+  <button class="fab" id="fabBtn"
+    onclick="UI.openSheet('actions')"
+    aria-label="Abrir menu de ações"
+    aria-haspopup="dialog">
+    <span aria-hidden="true">⚡</span>
+  </button>
+
+  <!-- ========================================
+       BOTTOM NAVIGATION (mobile)
+       ======================================== -->
+  <nav class="bottom-nav" role="navigation" aria-label="Navegação principal">
+    <button class="bottom-nav-item active" data-section="experiment"
+      onclick="UI.navigateTo('experiment')" aria-label="Ir para Experimento">
+      <span class="nav-icon" aria-hidden="true">🔬</span>
+      <span class="nav-label">Experimento</span>
+    </button>
+    <button class="bottom-nav-item" data-section="comparison"
+      onclick="UI.navigateTo('comparison')" aria-label="Ir para Comparação">
+      <span class="nav-icon" aria-hidden="true">📊</span>
+      <span class="nav-label">Comparar</span>
+    </button>
+    <button class="bottom-nav-item" data-section="missions"
+      onclick="UI.navigateTo('missions')" aria-label="Ir para Missões">
+      <span class="nav-icon" aria-hidden="true">🎯</span>
+      <span class="nav-label">Missões</span>
+    </button>
+    <button class="bottom-nav-item" data-section="journal"
+      onclick="UI.navigateTo('journal')" aria-label="Ir para Diário">
+      <span class="nav-icon" aria-hidden="true">📓</span>
+      <span class="nav-label">Diário</span>
+    </button>
+    <button class="bottom-nav-item"
+      onclick="UI.openSheet('more')"
+      aria-label="Mais opções"
+      aria-haspopup="dialog">
+      <span class="nav-icon" aria-hidden="true">⋯</span>
+      <span class="nav-label">Mais</span>
+    </button>
+  </nav>
+
+  <!-- ========================================
+       BOTTOM SHEET OVERLAY
+       ======================================== -->
+  <div class="sheet-overlay" id="sheetOverlay"
+    onclick="UI.closeAllSheets()" aria-hidden="true"></div>
+
+  <!-- ========================================
+       BOTTOM SHEET: AÇÕES (FAB)
+       ======================================== -->
+  <div class="bottom-sheet" id="sheet-actions"
+    role="dialog" aria-label="Menu de ações" aria-modal="true" aria-hidden="true">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <h3 class="sheet-title">⚡ Ações</h3>
+    <div class="sheet-actions">
+      <button class="sheet-action-btn" onclick="Sim.exportarPDF(); UI.closeAllSheets()">
+        <span class="action-icon" aria-hidden="true">📄</span>
+        <span>Exportar PDF</span>
+      </button>
+      <button class="sheet-action-btn" onclick="Sim.exportarCSV(); UI.closeAllSheets()">
+        <span class="action-icon" aria-hidden="true">📊</span>
+        <span>Exportar CSV</span>
+      </button>
+      <button class="sheet-action-btn" onclick="Sim.copiarLink(); UI.closeAllSheets()">
+        <span class="action-icon" aria-hidden="true">🔗</span>
+        <span>Copiar Link</span>
+      </button>
+      <button class="sheet-action-btn" onclick="Sim.compartilhar('whatsapp'); UI.closeAllSheets()">
+        <span class="action-icon" aria-hidden="true">📱</span>
+        <span>WhatsApp</span>
+      </button>
+      <button class="sheet-action-btn" onclick="Sim.compartilhar('twitter'); UI.closeAllSheets()">
+        <span class="action-icon" aria-hidden="true">🐦</span>
+        <span>Twitter/X</span>
+      </button>
+      <button class="sheet-action-btn" onclick="Sim.compartilhar('linkedin'); UI.closeAllSheets()">
+        <span class="action-icon" aria-hidden="true">💼</span>
+        <span>LinkedIn</span>
+      </button>
+    </div>
+    <button class="sheet-close-btn" onclick="UI.closeAllSheets()">Fechar</button>
+  </div>
+
+  <!-- ========================================
+       BOTTOM SHEET: MAIS (bottom nav)
+       ======================================== -->
+  <div class="bottom-sheet" id="sheet-more"
+    role="dialog" aria-label="Mais opções" aria-modal="true" aria-hidden="true">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <h3 class="sheet-title">⋯ Mais</h3>
+    <div class="sheet-menu">
+      <button class="sheet-menu-item" onclick="UI.navigateTo('achievements'); UI.closeAllSheets()">
+        <span aria-hidden="true">🏆</span>
+        Conquistas
+        <span id="achievementBadge" class="badge badge-sm">0/8</span>
+      </button>
+      <button class="sheet-menu-item" onclick="UI.navigateTo('calculator'); UI.closeAllSheets()">
+        <span aria-hidden="true">🧮</span>
+        Calculadora
+      </button>
+      <button class="sheet-menu-item" onclick="UI.navigateTo('applications'); UI.closeAllSheets()">
+        <span aria-hidden="true">🌍</span>
+        Aplicações
+      </button>
+      <button class="sheet-menu-item" onclick="UI.navigateTo('settings'); UI.closeAllSheets()">
+        <span aria-hidden="true">⚙️</span>
+        Configurações
+      </button>
+    </div>
+    <button class="sheet-close-btn" onclick="UI.closeAllSheets()">Fechar</button>
+  </div>
+
+  <!-- Toast notifications -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Scripts (order matters: sim → charts → ui → app) -->
+  <script src="assets/js/sim.js"></script>
+  <script src="assets/js/charts.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/app.js"></script>
 </body>
 </html>
