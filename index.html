@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratório Virtual de Física</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>⚡ Laboratório Virtual de Física</h1>
+                    <p class="subtitle">Experimentos Interativos de Eletromagnetismo</p>
+                </div>
+                <div class="sound-controls">
+                    <button class="sound-btn" id="soundToggle" title="Ligar/Desligar Som">
+                        <span class="sound-icon">🔊</span>
+                    </button>
+                    <div class="volume-slider-container" id="volumeContainer">
+                        <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <nav class="main-nav">
+            <button class="nav-btn active" data-simulation="coulomb">
+                <span class="nav-icon">⚡</span>
+                <span class="nav-text">Lei de Coulomb</span>
+            </button>
+            <button class="nav-btn" data-simulation="capacitance">
+                <span class="nav-icon">🔋</span>
+                <span class="nav-text">Capacitância</span>
+            </button>
+            <button class="nav-btn" data-simulation="achievements">
+                <span class="nav-icon">🏆</span>
+                <span class="nav-text">Conquistas</span>
+            </button>
+            <button class="nav-btn" data-simulation="challenges">
+                <span class="nav-icon">🎯</span>
+                <span class="nav-text">Desafios</span>
+            </button>
+            <button class="nav-btn" data-simulation="ohm">
+                <span class="nav-icon">⚡</span>
+                <span class="nav-text">Lei de Ohm</span>
+            </button>
+            <button class="nav-btn" data-simulation="resistivity">
+                <span class="nav-icon">📏</span>
+                <span class="nav-text">Resistividade</span>
+            </button>
+        </nav>
+
+        <main>
+            <section id="coulomb-simulation" class="simulation-section active">
+                <div class="simulation-header">
+                    <h2>Lei de Coulomb</h2>
+                    <p>Força eletrostática entre cargas elétricas</p>
+                </div>
+
+                <div class="simulation-content">
+                    <div class="simulation-area">
+                        <canvas id="coulombCanvas"></canvas>
+                        <div class="charge-indicator" id="chargeIndicator"></div>
+                    </div>
+
+                    <div class="controls-panel">
+                        <div class="control-group">
+                            <label>Carga 1 (q₁)</label>
+                            <div class="slider-container">
+                                <input type="range" id="charge1" min="-10" max="10" step="0.5" value="5">
+                                <span class="value-display" id="charge1Value">+5 μC</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Carga 2 (q₂)</label>
+                            <div class="slider-container">
+                                <input type="range" id="charge2" min="-10" max="10" step="0.5" value="-3">
+                                <span class="value-display" id="charge2Value">-3 μC</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Distância (r)</label>
+                            <div class="slider-container">
+                                <input type="range" id="distance" min="2" max="10" step="0.1" value="5">
+                                <span class="value-display" id="distanceValue">5.0 m</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Constante Eletrostática (k)</label>
+                            <div class="constant-display">
+                                8.99 × 10⁹ N·m²/C²
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-panel">
+                        <div class="result-card result-full-width">
+                            <h3>Fórmula da Lei de Coulomb</h3>
+                            <div class="formula-display formula-large" id="coulombFormula"></div>
+                        </div>
+
+                        <div class="result-cards-row">
+                            <div class="result-card">
+                                <h3>Força Elétrica (F)</h3>
+                                <div class="result-value" id="forceResult">0.00 N</div>
+                                <div class="result-unit">Newtons</div>
+                            </div>
+
+                            <div class="result-card">
+                                <h3>Tipo de Força</h3>
+                                <div class="result-value" id="forceType">Atração</div>
+                                <div class="result-unit" id="forceDescription"></div>
+                            </div>
+                        </div>
+
+                        <div class="result-card graph-card graph-card-large">
+                            <h3>📈 Gráfico: Força vs Distância</h3>
+                            <p class="graph-description">Como a força elétrica varia com a distância entre as cargas</p>
+                            <canvas id="forceGraph"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="info-panel">
+                        <div class="info-card">
+                            <h3>📚 Lei de Coulomb</h3>
+                            <p>A força entre duas cargas elétricas é <strong>diretamente proporcional</strong> ao produto das cargas e <strong>inversamente proporcional</strong> ao quadrado da distância entre elas.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>💡 Dicas</h3>
+                            <ul>
+                                <li>Cargas de mesmo sinal se <strong>repelem</strong></li>
+                                <li>Cargas de sinais opostos se <strong>atraem</strong></li>
+                                <li>Maior distância = menor força</li>
+                                <li>Maior carga = maior força</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="capacitance-simulation" class="simulation-section">
+                <div class="simulation-header">
+                    <h2>Capacitância</h2>
+                    <p>Armazenamento de carga em capacitores de placas paralelas</p>
+                </div>
+
+                <div class="simulation-content">
+                    <div class="simulation-area">
+                        <canvas id="capacitanceCanvas"></canvas>
+                        <div class="capacitance-indicator" id="capacitanceIndicator"></div>
+                    </div>
+
+                    <div class="controls-panel">
+                        <div class="control-group">
+                            <label>Área das Placas (A)</label>
+                            <div class="slider-container">
+                                <input type="range" id="plateArea" min="1" max="10" step="0.5" value="5">
+                                <span class="value-display" id="plateAreaValue">5.0 m²</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Distância entre Placas (d)</label>
+                            <div class="slider-container">
+                                <input type="range" id="plateDistance" min="1" max="8" step="0.1" value="3">
+                                <span class="value-display" id="plateDistanceValue">3.0 mm</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Tensão (V)</label>
+                            <div class="slider-container">
+                                <input type="range" id="voltage" min="1" max="100" step="1" value="50">
+                                <span class="value-display" id="voltageValue">50 V</span>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Permissividade (ε₀)</label>
+                            <div class="constant-display">
+                                8.854 × 10⁻¹² F/m
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-panel">
+                        <div class="result-card result-full-width">
+                            <h3>Fórmulas de Capacitância</h3>
+                            <div class="formula-display formula-large" id="capacitanceFormula"></div>
+                        </div>
+
+                        <div class="result-cards-row">
+                            <div class="result-card">
+                                <h3>Capacitância (C)</h3>
+                                <div class="result-value" id="capacitanceResult">0.00 pF</div>
+                                <div class="result-unit">Picofarads</div>
+                            </div>
+
+                            <div class="result-card">
+                                <h3>Carga Armazenada (Q)</h3>
+                                <div class="result-value" id="chargeStored">0.00 nC</div>
+                                <div class="result-unit">Nanocoulombs</div>
+                            </div>
+
+                            <div class="result-card">
+                                <h3>Energia (U)</h3>
+                                <div class="result-value" id="energyStored">0.00 μJ</div>
+                                <div class="result-unit">Microjoules</div>
+                            </div>
+                        </div>
+
+                        <div class="result-card graph-card graph-card-large">
+                            <h3>📈 Gráfico: Capacitância vs Distância</h3>
+                            <p class="graph-description">Como a capacitância varia com a distância entre as placas</p>
+                            <canvas id="capacitanceGraph"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="info-panel">
+                        <div class="info-card">
+                            <h3>📚 Capacitância</h3>
+                            <p>A capacitância de um capacitor de placas paralelas é <strong>diretamente proporcional</strong> à área das placas e <strong>inversamente proporcional</strong> à distância entre elas.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>💡 Dicas</h3>
+                            <ul>
+                                <li>Maior área = maior capacitância</li>
+                                <li>Menor distância = maior capacitância</li>
+                                <li>Maior tensão = mais carga armazenada</li>
+                                <li>Energia: U = ½CV²</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="achievements-simulation" class="simulation-section">
+                <div class="simulation-header">
+                    <h2>🏆 Conquistas</h2>
+                    <p>Desbloqueie conquistas explorando as simulações</p>
+                </div>
+
+                <div class="achievements-grid" id="achievementsGrid">
+                </div>
+            </section>
+
+            <section id="challenges-simulation" class="simulation-section">
+                <div class="simulation-header">
+                    <h2>🎯 Desafios</h2>
+                    <p>Resolva problemas e teste seu conhecimento</p>
+                </div>
+
+                <div class="challenges-container" id="challengesContainer">
+                </div>
+            </section>
+
+            <section id="ohm-simulation" class="simulation-section">
+                <div class="simulation-header">
+                    <h2>Lei de Ohm</h2>
+                    <p>Relação entre tensão, corrente e resistência</p>
+                </div>
+
+                <div class="simulation-content ohm-layout">
+                    <div class="controls-panel ohm-controls">
+                        <div class="control-group">
+                            <div class="slider-container">
+                                <input type="range" id="voltageOhm" min="0" max="100" step="1" value="50">
+                            </div>
+                            <label>Tensão (V)</label>
+                            <span class="value-display" id="voltageOhmValue">50 V</span>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="slider-container">
+                                <input type="range" id="resistanceOhm" min="1" max="1000" step="1" value="100">
+                            </div>
+                            <label>Resistência (R)</label>
+                            <span class="value-display" id="resistanceOhmValue">100 Ω</span>
+                        </div>
+                    </div>
+
+                    <div class="result-card graph-card ohm-graph-card">
+                        <h3>📈 Gráfico: Corrente vs Tensão</h3>
+                        <p class="graph-description">Como a corrente varia com a tensão aplicada</p>
+                        <canvas id="ohmGraph"></canvas>
+                    </div>
+
+                    <div class="results-panel">
+                        <div class="result-card result-full-width">
+                            <h3>Fórmula da Lei de Ohm</h3>
+                            <div class="formula-display formula-large" id="ohmFormula"></div>
+                        </div>
+
+                        <div class="result-cards-row">
+                            <div class="result-card">
+                                <h3>Corrente (I)</h3>
+                                <div class="result-value" id="currentResult">0.00 A</div>
+                                <div class="result-unit">Amperes</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="simulation-area">
+                        <canvas id="ohmCanvas"></canvas>
+                    </div>
+
+                    <div class="info-panel">
+                        <div class="info-card">
+                            <h3>📚 Lei de Ohm</h3>
+                            <p>A corrente que percorre um condutor é <strong>diretamente proporcional</strong> à tensão aplicada e <strong>inversamente proporcional</strong> à resistência do condutor.</p>
+                        </div>
+                        <div class="info-card">
+                            <h3>💡 Dicas</h3>
+                            <ul>
+                                <li>Maior tensão = maior corrente</li>
+                                <li>Maior resistência = menor corrente</li>
+                                <li>I = V / R</li>
+                                <li>V = R × I</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="resistivity-simulation" class="simulation-section">
+                <div class="simulation-header">
+                    <h2>Resistividade</h2>
+                    <p>Resistência de fios condutores e influência do material</p>
+                </div>
+
+                <div class="simulation-content resistivity-layout">
+                    <div class="controls-panel resistivity-controls">
+                        <div class="control-group">
+                            <div class="wire-selector">
+                                <label><input type="radio" name="material" value="Ni-Cr" checked> Ni-Cr</label>
+                                <label><input type="radio" name="material" value="Fe"> Fe</label>
+                            </div>
+                            <label>Material</label>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="slider-container">
+                                <input type="range" id="diameterSlider" min="0.2" max="1.0" step="0.05" value="0.5">
+                            </div>
+                            <label>Diâmetro (mm)</label>
+                            <span class="value-display" id="diameterValue">0.50 mm</span>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="slider-container">
+                                <input type="range" id="voltageResistivity" min="0.1" max="10" step="0.1" value="1">
+                            </div>
+                            <label>Tensão (V)</label>
+                            <span class="value-display" id="voltageResistivityValue">1.0 V</span>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="slider-container">
+                                <input type="range" id="maxLengthSlider" min="0.1" max="1" step="0.05" value="1">
+                            </div>
+                            <label>Comprimento Máximo (L)</label>
+                            <span class="value-display" id="maxLengthValue">1.0 m</span>
+                        </div>
+
+                        <div class="control-group" style="margin-top:0.5rem;">
+                            <div class="wire-selector">
+                                <label><input type="radio" name="editWire" value="0" checked> Fio 1</label>
+                                <label><input type="radio" name="editWire" value="1"> Fio 2</label>
+                                <label><input type="radio" name="editWire" value="2"> Fio 3</label>
+                                <label><input type="radio" name="editWire" value="3"> Fio 4</label>
+                            </div>
+                            <label>Fio para editar</label>
+                        </div>
+                    </div>
+
+                    <div class="result-card graph-card resistivity-graph-card">
+                        <h3>📈 Gráfico: Resistência vs Comprimento</h3>
+                        <p class="graph-description">Comparação entre todos os fios</p>
+                        <canvas id="resistivityGraph"></canvas>
+                    </div>
+
+                    <div class="result-card" style="grid-column: 1 / -1;">
+                        <h3>Tabela de Resistência e Corrente</h3>
+                        <div class="data-table" id="resistivityTable"></div>
+                    </div>
+
+                    <div class="info-card expert-analysis" style="grid-column: 1 / -1;">
+                        <h3>🔬 Análise do Especialista</h3>
+                        <div id="expertAnalysis"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Laboratório Virtual de Física • Parte do <a href="https://portalfisica.com" target="_blank">Portalfisica.com</a></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="audio.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
